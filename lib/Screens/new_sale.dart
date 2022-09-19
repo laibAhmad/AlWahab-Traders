@@ -10,6 +10,7 @@ import 'package:inventory_system/constants.dart';
 import 'package:printing/printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/data.dart';
+import '../home.dart';
 
 class NewSale extends StatefulWidget {
   const NewSale({Key? key}) : super(key: key);
@@ -1347,9 +1348,9 @@ Future<void> prints(
     pos.document('Total Sales').set({'Total': (totalRs + netTotal)});
     pos.document('Profit').set({'Profit': (profit + totalProfit)});
 
-    // index = 0;
-    // Navigator.pushReplacement(
-    //     context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+    index = 0;
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const HomeScreen()));
   });
 
   final image = await imageFromAssetBundle('assets/img/black.png');

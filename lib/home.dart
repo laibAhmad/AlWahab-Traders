@@ -6,6 +6,7 @@ import 'package:inventory_system/Screens/stock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Models/data.dart';
+import 'Screens/alert.dart';
 import 'Screens/dashboard.dart';
 import 'Screens/expenses.dart';
 import 'Screens/new_sale.dart';
@@ -82,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const Return(),
       const ExpensesScreen(),
       const Icon(Icons.visibility),
-      const Icon(Icons.bolt),
+      const AlertStock(),
       const Icon(Icons.home),
       const Icon(Icons.visibility),
     ];

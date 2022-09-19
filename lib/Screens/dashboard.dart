@@ -27,6 +27,11 @@ class _DashboardState extends State<Dashboard> {
   int month = 0;
   int year = 0;
 
+  int todayNo = 0;
+  int weekNo = 0;
+  int monthNo = 0;
+  int yearNo = 0;
+
   List<Invoices> invoiceList = [];
 
   @override
@@ -74,6 +79,7 @@ class _DashboardState extends State<Dashboard> {
           1) {
         setState(() {
           today = today + invoiceList[i].netTotal;
+          todayNo=todayNo+1;
         });
       }
 
@@ -84,6 +90,7 @@ class _DashboardState extends State<Dashboard> {
           7) {
         setState(() {
           week = week + invoiceList[i].netTotal;
+          weekNo=weekNo+1;
         });
       }
 
@@ -94,6 +101,7 @@ class _DashboardState extends State<Dashboard> {
           30) {
         setState(() {
           month = month + invoiceList[i].netTotal;
+          monthNo=monthNo+1;
         });
       }
 
@@ -104,6 +112,7 @@ class _DashboardState extends State<Dashboard> {
           365) {
         setState(() {
           year = year + invoiceList[i].netTotal;
+          yearNo=yearNo+1;
         });
       }
     }
@@ -162,6 +171,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                       
                         Text(
                           myFormat.format(today),
                           style: TextStyle(
@@ -243,6 +253,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        
                         Text(myFormat.format(year),
                             style: TextStyle(
                                 color: Colors.purple,

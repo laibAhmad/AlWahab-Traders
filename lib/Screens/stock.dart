@@ -27,21 +27,10 @@ class _InStockState extends State<InStock> {
 
   TextEditingController id = TextEditingController();
   TextEditingController itemName = TextEditingController();
-  TextEditingController pricePerUnit = TextEditingController();
-  TextEditingController totalItems = TextEditingController();
-
-  // Future<List<Printer>> findPrinters() async {
-  //   var l = await Printing.listPrinters();
-
-  //   print(l.first);
-  //   prints(l.first);
-  //   return l;
-  // }
 
   @override
   void initState() {
     itemsList1.clear();
-    // findPrinters();
 
     getData();
 
@@ -271,90 +260,9 @@ class _InStockState extends State<InStock> {
                                           },
                                         ),
                                       ),
-                                      DataCell(
-                                        TextFormField(
-                                          decoration: const InputDecoration(
-                                            enabledBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                            focusedBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                            border: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                          ),
-                                          initialValue: item.pp.toString(),
-                                          onFieldSubmitted: (val) {
-                                            setState(() {
-                                              op = '';
-                                            });
-                                            ref.document(item.id).update({
-                                              'pricePerPiece':
-                                                  int.parse(val.trim()),
-                                              'price': item.items *
-                                                  int.parse(val.trim())
-                                            }).then((value) {
-                                              Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const HomeScreen()));
-                                            });
-                                            Timer(const Duration(seconds: 3),
-                                                () {
-                                              setState(() {
-                                                op = 'edit';
-                                              });
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      DataCell(
-                                        TextFormField(
-                                          decoration: const InputDecoration(
-                                            enabledBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                            focusedBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                            border: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.transparent),
-                                            ),
-                                          ),
-                                          initialValue: item.items.toString(),
-                                          onFieldSubmitted: (val) {
-                                            setState(() {
-                                              op = '';
-                                            });
-                                            ref.document(item.id).update({
-                                              'totalItems':
-                                                  int.parse(val.trim()),
-                                              'price': item.pp *
-                                                  int.parse(val.trim())
-                                            }).then((value) {
-                                              Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const HomeScreen()));
-                                            });
-                                            Timer(const Duration(seconds: 3),
-                                                () {
-                                              setState(() {
-                                                op = 'edit';
-                                              });
-                                            });
-                                          },
-                                        ),
-                                      ),
+                                      DataCell(Text('${item.pp}')),
+                                      DataCell(Text('${item.items}')),
+
                                       DataCell(Text('Rs. ${item.total}')),
                                       DataCell(Row(
                                         children: [
@@ -394,86 +302,4 @@ class _InStockState extends State<InStock> {
       ),
     );
   }
-}
-
-Future<void> prints(Printer? printer) async {
-  final image = await imageFromAssetBundle('assets/img/black.png');
-
-  if (printer == null) return;
-
-  final doc = pw.Document();
-  const width = 2.83 * PdfPageFormat.inch;
-  const height = 300.0 * PdfPageFormat.mm;
-  const pageFormat = PdfPageFormat(width, height);
-
-  final textStyle10 = pw.TextStyle(
-    fontSize: 10.0,
-    color: PdfColor.fromHex("#000000"),
-  );
-
-  final textStyle12 = pw.TextStyle(
-    fontSize: 11.5,
-    color: PdfColor.fromHex("#000000"),
-  );
-
-  final textStyle14 = pw.TextStyle(
-    fontSize: 14.0,
-    color: PdfColor.fromHex("#000000"),
-  );
-
-  doc.addPage(
-    pw.Page(
-      pageFormat: pageFormat,
-      build: (pw.Context context) {
-        return pw.Expanded(
-          child: pw.Column(
-            children: [
-              pw.Center(child: pw.Image(image)),
-              pw.Center(child: pw.Text('AL-WAHAB TRADERS', style: textStyle14)),
-              pw.Center(
-                  child: pw.Text('Deals in Mobile Phone Pouch and Protector',
-                      style: textStyle10)),
-              pw.Center(child: pw.Text('\n', style: textStyle10)),
-              pw.Center(
-                  child: pw.Text('Shop#37,38 4th Floor Hassan Center,',
-                      style: textStyle12)),
-
-              pw.Center(
-                  child: pw.Text('Hall Road, Lahore', style: textStyle12)),
-              // pw.Center(child: pw.Text('Lahore', style: textStyle)),
-              pw.Center(
-                  child: pw.Text('0307-4506627 , 0307-4506662',
-                      style: textStyle12)),
-              pw.Center(child: pw.Text('SALE', style: textStyle12)),
-              pw.Center(
-                  child:
-                      pw.Text('--------------------------------------------')),
-              pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('Inv#: 001', style: textStyle10),
-                    pw.Text('Date:  ${DateFormat.yMd().format(DateTime.now())}',
-                        style: textStyle10),
-                  ]),
-              pw.Text('Type:  CASH', style: textStyle10),
-              pw.Text('Testing', style: textStyle10),
-            ],
-          ),
-        );
-      },
-    ),
-  );
-
-  await Printing.directPrintPdf(
-    printer: printer,
-    onLayout: (_) => doc.save(),
-    format: pageFormat,
-    usePrinterSettings: true,
-  );
-
-  // if (res) {
-  //   Logger().i("Printed!");
-  // } else {
-  //   Logger().i("Error");
-  // }
 }
