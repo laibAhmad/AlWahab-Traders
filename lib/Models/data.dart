@@ -39,7 +39,7 @@ class CartList {
 }
 
 class Invoices {
-  int bank, cash, cr, netTotal;
+  int bank, cash, cr, netTotal,profit;
   dynamic id;
   String date;
   Invoices(
@@ -47,6 +47,7 @@ class Invoices {
       required this.cash,
       required this.cr,
       required this.netTotal,
+      required this.profit,
       required this.id,
       required this.date});
 }

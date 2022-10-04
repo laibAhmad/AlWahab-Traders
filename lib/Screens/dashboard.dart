@@ -27,6 +27,11 @@ class _DashboardState extends State<Dashboard> {
   int month = 0;
   int year = 0;
 
+  int todayPro = 0;
+  int weekPro = 0;
+  int monthPro = 0;
+  int yearPro = 0;
+
   int todayNo = 0;
   int weekNo = 0;
   int monthNo = 0;
@@ -58,7 +63,8 @@ class _DashboardState extends State<Dashboard> {
             bank: element['bankRs'],
             cash: element['cashRs'],
             cr: element['crRs'],
-            netTotal: element['netTotal']);
+            netTotal: element['netTotal'],
+            profit: element['profit']);
 
         invoiceList.add(list);
 
@@ -79,6 +85,7 @@ class _DashboardState extends State<Dashboard> {
           1) {
         setState(() {
           today = today + invoiceList[i].netTotal;
+          todayPro=todayPro+invoiceList[i].profit;
           todayNo=todayNo+1;
         });
       }
@@ -90,6 +97,7 @@ class _DashboardState extends State<Dashboard> {
           7) {
         setState(() {
           week = week + invoiceList[i].netTotal;
+          weekPro=weekPro+invoiceList[i].profit;
           weekNo=weekNo+1;
         });
       }
@@ -101,6 +109,7 @@ class _DashboardState extends State<Dashboard> {
           30) {
         setState(() {
           month = month + invoiceList[i].netTotal;
+          monthPro=monthPro+invoiceList[i].profit;
           monthNo=monthNo+1;
         });
       }
@@ -112,6 +121,7 @@ class _DashboardState extends State<Dashboard> {
           365) {
         setState(() {
           year = year + invoiceList[i].netTotal;
+          yearPro=yearPro+invoiceList[i].profit;
           yearNo=yearNo+1;
         });
       }
@@ -144,148 +154,295 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    return SingleChildScrollView(
-      child: SizedBox(
-        width: size.width * 0.85,
-        height: size.height * 0.9,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Sales Activity',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    return SizedBox(
+      width: size.width * 0.85,
+      height: size.height * 0.9,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+            shrinkWrap: true,
+          children: [
+            const Text(
+              'Sales Overview',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(height: 10),
+            
+            Container(
+              width: size.width * 0.83,
+              height: size.height * 0.3,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border.all(
+                  color: Colors.grey.shade100,
+                ),
+                borderRadius: BorderRadius.circular(5.0),
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: size.width * 0.2,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                       
-                        Text(
-                          myFormat.format(today),
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: size.width * 0.032,
-                              fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          'Today',
-                          style: TextStyle(fontSize: size.width * 0.015),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: size.width * 0.2,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                      // border: Border.all(
-                      //   color: grey,
-                      // ),
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          myFormat.format(week),
-                          style: TextStyle(
-                              color: Colors.green,
-                              fontSize: size.width * 0.032,
-                              fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          'This Week',
-                          style: TextStyle(fontSize: size.width * 0.015),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: size.width * 0.2,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.2),
-                      // border: Border.all(
-                      //   color: grey,
-                      // ),
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          myFormat.format(month),
-                          style: TextStyle(
-                              color: red,
-                              fontSize: size.width * 0.032,
-                              fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          'This Month',
-                          style: TextStyle(fontSize: size.width * 0.015),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: size.width * 0.2,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.2),
-                      // border: Border.all(
-                      //   color: grey,
-                      // ),
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        
-                        Text(myFormat.format(year),
-                            style: TextStyle(
-                                color: Colors.purple,
-                                fontSize: size.width * 0.032,
-                                fontWeight: FontWeight.w500)),
-                        Text(
-                          'This Year',
-                          style: TextStyle(fontSize: size.width * 0.015),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Container(
-                    width: size.width * 0.5,
-                    height: size.height * 0.5,
-                    decoration: BoxDecoration(
-                      color: grey,
-                      border: Border.all(
-                        color: grey,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                     SizedBox(
+              width: size.width * 0.2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Today',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
+                          Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Image.asset(sales,color: Colors.blue.shade400,),
+                )),),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+               const  Text('Total Sales',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('$todayNo',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(earn,color: Colors.blue.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+               const  Text('Earned',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $today',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(profitimg,color: Colors.blue.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Profit',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs.$todayPro',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],)
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  )
-                ],
-              )
-            ],
-          ),
+                    ),SizedBox(
+              width: size.width * 0.2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('This Week',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
+                          Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Image.asset(sales,color: Colors.green.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Total Sales',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('$weekNo',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(earn,color: Colors.green.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Earned',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $week',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(profitimg,color: Colors.green.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+               const  Text('Profit',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $weekPro',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],)
+                        ],
+                      ),
+                    ),SizedBox(
+              width: size.width * 0.2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('This Month',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
+                          Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Image.asset(sales,color: Colors.red.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Total Sales',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('$monthNo',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(earn,color: Colors.red.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Earned',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $month',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(profitimg,color: Colors.red.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Profit',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $monthPro',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],)
+                        ],
+                      ),
+                    ),SizedBox(
+              width: size.width * 0.2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('This Year',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
+                          Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Image.asset(sales,color: Colors.purple.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Total Sales',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('$yearNo',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(earn,color: Colors.purple.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+                const Text('Earned',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $year',style:  TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)
+                          ],),Row(children: [
+                            Container(height: 45,
+                            width: 45,
+                            decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.15),
+            
+                  borderRadius: BorderRadius.circular(5.0),
+                ),child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(profitimg,color: Colors.purple.shade400,),
+                ))),const SizedBox(width: 10,),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:   [
+               const  Text('Profit',style: TextStyle(fontWeight: FontWeight.w400)),
+                  Text('Rs. $yearPro',style: TextStyle(fontSize: size.width*0.02, fontWeight: FontWeight.w700)),
+                ],)],)
+                    ],
+                  ),
+                )
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: size.width * 0.2,
+              height: size.width * 0.3,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border.all(
+                  color: Colors.grey.shade100,
+                ),
+                borderRadius: BorderRadius.circular(5.0),
+              ),)
+          ],
         ),
       ),
     );

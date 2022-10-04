@@ -1318,11 +1318,13 @@ Future<void> prints(
     'payType': pay,
     'cashRs': cash,
     'crRs': cr,
-    'bankRs': bank
+    'bankRs': bank,
+    'profit':0
   }).then((value) {
     docId = value.id;
 
     for (var i = 0; i < cart.length; i++) {
+      
       invo.document(docId!).collection('items').add({
         'iNo': cart[i].uid,
         'iName': cart[i].nameofItem,
@@ -1342,6 +1344,7 @@ Future<void> prints(
       totalProfit =
           cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
     }
+    invo.document(docId!).update({'profit':totalProfit});
     pos.document('Bank Rs').set({'bank': (bankRs + bank)});
     pos.document('Cash Rs').set({'cash': (cashRs + cash)});
     pos.document('CR Rs').set({'cr': (crRs + cr)});

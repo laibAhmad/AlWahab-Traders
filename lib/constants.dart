@@ -14,6 +14,21 @@ int bankRs = 0;
 int crRs = 0;
 int totalRs = 0;
 
+  int todayMain = 0;
+  int weekMain = 0;
+  int monthMain = 0;
+  int yearMain = 0;
+
+  int todayProMain = 0;
+  int weekProMain = 0;
+  int monthProMain = 0;
+  int yearProMain = 0;
+
+  int todayNoMain = 0;
+  int weekNoMain = 0;
+  int monthNoMain = 0;
+  int yearNoMain = 0;
+
 dynamic l;
 
 Color black = Colors.black;
@@ -56,3 +71,9 @@ CollectionReference ref = Firestore.instance
     .collection('stock');
 
 int indexList = -1;
+
+String sales='assets/img/sales.png';
+
+String earn='assets/img/earn.png';
+
+String profitimg ='assets/img/profit.png';
