@@ -153,13 +153,15 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               'spentFrom': search,
                             }).then((value) {
                               if (search == 'Cash') {
-                                pos
-                                    .document('Bank Rs')
-                                    .set({'bank': (bankRs - spend)});
+                                
                                 pos
                                     .document('Cash Rs')
                                     .set({'cash': (cashRs - spend)});
-                              } else {}
+                              } else {
+                                pos
+                                    .document('Bank Rs')
+                                    .set({'bank': (bankRs - spend)});
+                              }
                               setState(() {
                                 load = false;
                                 index = 6;

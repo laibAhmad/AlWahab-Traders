@@ -65,15 +65,36 @@ double fsize18 = 18;
 
 List<InStockData> itemsList1 = [];
 
+List<Customers> customerList = [];
+
 CollectionReference ref = Firestore.instance
     .collection("AWT")
     .document('inventory')
     .collection('stock');
 
+CollectionReference invoiceRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('invoices');
+
 int indexList = -1;
 
-String sales='assets/img/sales.png';
+IconData salesicon =Icons.price_check_rounded;
 
-String earn='assets/img/earn.png';
+IconData earnicon=Icons.assignment_turned_in_rounded;
 
-String profitimg ='assets/img/profit.png';
+IconData profiticon = Icons.trending_up_rounded; 
+
+String kmbgenerator(int n) {
+  if (n > 999 && n < 99999) {
+    return "${(n / 1000).toStringAsFixed(1)}K";
+  } else if (n > 99999 && n < 999999) {
+    return "${(n / 1000).toStringAsFixed(0)}K";
+  } else if (n > 999999 && n < 999999999) {
+    return "${(n / 1000000).toStringAsFixed(1)}M";
+  } else if (n > 999999999) {
+    return "${(n / 1000000000).toStringAsFixed(1)}B";
+  } else {
+    return n.toString();
+  }
+}

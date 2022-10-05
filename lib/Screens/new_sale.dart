@@ -34,6 +34,8 @@ class _NewSaleState extends State<NewSale> {
   TextEditingController cashbank = TextEditingController();
   TextEditingController cashcr = TextEditingController();
 
+  var item = [];
+
   String selected = '';
   int serial = 0;
 
@@ -125,9 +127,10 @@ class _NewSaleState extends State<NewSale> {
 
   @override
   void initState() {
-    findPrinters();
+    getCustomers();
     getData();
 
+    findPrinters();
     super.initState();
   }
 
@@ -156,6 +159,43 @@ class _NewSaleState extends State<NewSale> {
     return itemsList;
   }
 
+  Future<List<Customers>> getCustomers() async {
+    indexList = indexList - 1;
+    await invoiceRef.get().asStream().forEach((element) {
+      customerList.clear();
+      for (var element in element) {
+        Customers list = Customers(
+          id: element['id'],
+          customerName: element['customer'],
+        );
+        customerList.add(list);
+
+        getSortCustList();
+        setState(() {});
+      }
+    });
+    return customerList;
+  }
+
+  getSortCustList() {
+    customerList.sort((a, b) {
+      return a.customerName
+          .toString()
+          .toLowerCase()
+          .compareTo(b.customerName.toString().toLowerCase());
+    });
+  }
+
+  getMenuItems() {
+    item.clear();
+    for (var i = 0; i < customerList.length; i++) {
+      setState(() {
+        item.add(customerList[i].customerName);
+      });
+    }
+    return item;
+  }
+
   getSortList() {
     itemsList1.sort((a, b) {
       return a.name
@@ -173,17 +213,6 @@ class _NewSaleState extends State<NewSale> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Container(
-        //   padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
-        //   decoration: BoxDecoration(color: grey),
-        //   width: size.width * 0.85,
-        //   height: size.height * 0.1,
-        //   alignment: Alignment.bottomLeft,
-        //   child: Text(
-        //     'New Sale',
-        //     style: TextStyle(fontWeight: bold, fontSize: size.width * 0.02),
-        //   ),
-        // ),
         Row(
           children: [
             SizedBox(
@@ -219,6 +248,19 @@ class _NewSaleState extends State<NewSale> {
                           label: Text(
                             'Customer Name',
                             style: TextStyle(color: black),
+                          ),
+                          suffixIcon: PopupMenuButton<dynamic>(
+                            icon: const Icon(Icons.arrow_drop_down),
+                            onSelected: (value) {
+                              cn.text = value;
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return getMenuItems()
+                                  .map<PopupMenuItem<dynamic>>((value) {
+                                return PopupMenuItem(
+                                    value: value, child: Text(value));
+                              }).toList();
+                            },
                           ),
                         ),
                         onChanged: (val) {
@@ -1319,12 +1361,11 @@ Future<void> prints(
     'cashRs': cash,
     'crRs': cr,
     'bankRs': bank,
-    'profit':0
+    'profit': 0
   }).then((value) {
     docId = value.id;
 
     for (var i = 0; i < cart.length; i++) {
-      
       invo.document(docId!).collection('items').add({
         'iNo': cart[i].uid,
         'iName': cart[i].nameofItem,
@@ -1344,7 +1385,7 @@ Future<void> prints(
       totalProfit =
           cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
     }
-    invo.document(docId!).update({'profit':totalProfit});
+    invo.document(docId!).update({'profit': totalProfit});
     pos.document('Bank Rs').set({'bank': (bankRs + bank)});
     pos.document('Cash Rs').set({'cash': (cashRs + cash)});
     pos.document('CR Rs').set({'cr': (crRs + cr)});

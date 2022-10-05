@@ -63,3 +63,9 @@ class Expenses {
       required this.expense,
       required this.id});
 }
+
+class Customers{
+  String customerName;
+  dynamic id;
+  Customers({required this.customerName,required this.id});
+}
