@@ -37,22 +37,24 @@ class _DashboardState extends State<Dashboard> {
   int monthNo = 0;
   int yearno = 0;
 
+  int cash = 0;
+  int bank = 0;
+  int cr = 0;
+
   List<Invoices> invoiceList = [];
 
   @override
   void initState() {
     getInvoices();
-
-    getPOSdate();
+    getcash();
+    getCR();
+    getBank();
 
     super.initState();
   }
 
   Future<List<Invoices>> getInvoices() async {
-    await Firestore.instance
-        .collection("AWT")
-        .document('inventory')
-        .collection('invoices')
+    await invoiceRef
         .get()
         .asStream()
         .forEach((element) {
@@ -64,7 +66,12 @@ class _DashboardState extends State<Dashboard> {
             cash: element['cashRs'],
             cr: element['crRs'],
             netTotal: element['netTotal'],
-            profit: element['profit']);
+            profit: element['profit'],
+            cname: '',
+            invo: 0,
+            paytype: '',
+            totalitems: 0,
+            invoiceitems: [], index: 0);
 
         invoiceList.add(list);
 
@@ -140,25 +147,24 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  getPOSdate() async {
-    await pos.document('Bank Rs').get().asStream().forEach((element) {
-      bankRs = element['bank'];
-    });
-
+  getCR() async {
     await pos.document('CR Rs').get().asStream().forEach((element) {
-      crRs = element['cr'];
+      cr = element['cr'];
+      crRs = cr;
     });
+  }
 
+  getcash() async {
     await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cashRs = element['cash'];
+      cash = element['cash'];
+      cashRs = cash;
     });
+  }
 
-    await pos.document('Profit').get().asStream().forEach((element) {
-      profit = element['Profit'];
-    });
-
-    await pos.document('Total Sales').get().asStream().forEach((element) {
-      totalRs = element['Total'];
+  getBank() async {
+    await pos.document('Bank Rs').get().asStream().forEach((element) {
+      bank = element['bank'];
+      bankRs = bank;
     });
   }
 
@@ -713,7 +719,7 @@ class _DashboardState extends State<Dashboard> {
                               const Text('Cash',
                                   style:
                                       TextStyle(fontWeight: FontWeight.w400)),
-                              Text('Rs. $cashRs',
+                              Text('Rs. $cash',
                                   style: TextStyle(
                                       fontSize: size.width * 0.016,
                                       fontWeight: FontWeight.w700)),
@@ -747,7 +753,7 @@ class _DashboardState extends State<Dashboard> {
                               const Text('Bank',
                                   style:
                                       TextStyle(fontWeight: FontWeight.w400)),
-                              Text('Rs. $bankRs',
+                              Text('Rs. $bank',
                                   style: TextStyle(
                                       fontSize: size.width * 0.016,
                                       fontWeight: FontWeight.w700)),
@@ -781,7 +787,7 @@ class _DashboardState extends State<Dashboard> {
                               const Text('CR',
                                   style:
                                       TextStyle(fontWeight: FontWeight.w400)),
-                              Text('Rs. $crRs',
+                              Text('Rs. $cr',
                                   style: TextStyle(
                                       fontSize: size.width * 0.016,
                                       fontWeight: FontWeight.w700)),

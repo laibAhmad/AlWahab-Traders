@@ -77,6 +77,12 @@ CollectionReference invoiceRef = Firestore.instance
     .document('inventory')
     .collection('invoices');
 
+CollectionReference expenseRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('expenses');
+
+
 int indexList = -1;
 
 IconData salesicon =Icons.price_check_rounded;

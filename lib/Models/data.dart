@@ -1,3 +1,5 @@
+import 'package:flutter/src/material/data_table.dart';
+
 class InStockData {
   String uid, name, date;
 
@@ -39,9 +41,10 @@ class CartList {
 }
 
 class Invoices {
-  int bank, cash, cr, netTotal,profit;
+  int bank, cash, cr, netTotal, profit, invo, totalitems,index;
   dynamic id;
-  String date;
+  String date, cname, paytype;
+  List<InvoiceItems> invoiceitems;
   Invoices(
       {required this.bank,
       required this.cash,
@@ -49,23 +52,44 @@ class Invoices {
       required this.netTotal,
       required this.profit,
       required this.id,
-      required this.date});
+      required this.invo,
+      required this.cname,
+      required this.paytype,
+      required this.totalitems,
+      required this.date,
+      required this.invoiceitems,
+      required this.index
+       });
+
+}
+
+class InvoiceItems {
+  String iname, ino;
+  int isold, iPrice, totalsold;
+  dynamic id;
+  InvoiceItems(
+      {required this.iPrice,
+      required this.id,
+      required this.iname,
+      required this.ino,
+      required this.isold,
+      required this.totalsold});
 }
 
 class Expenses {
-  int spent;
-  String expense, spendfrom, date;
+  int spentRs;
+  String expenseName, spendfrom, date;
   dynamic id;
   Expenses(
       {required this.spendfrom,
-      required this.spent,
+      required this.spentRs,
       required this.date,
-      required this.expense,
+      required this.expenseName,
       required this.id});
 }
 
-class Customers{
+class Customers {
   String customerName;
   dynamic id;
-  Customers({required this.customerName,required this.id});
+  Customers({required this.customerName, required this.id});
 }

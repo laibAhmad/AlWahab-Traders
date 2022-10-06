@@ -44,6 +44,7 @@ dependencies:
   pdf: ^3.8.2
   printing: ^5.9.2
   dropdown_textfield: ^1.0.5
+  expandable: ^5.0.1
 
 dev_dependencies:
   flutter_test:

@@ -9,6 +9,7 @@ import 'Models/data.dart';
 import 'Screens/alert.dart';
 import 'Screens/dashboard.dart';
 import 'Screens/expenses.dart';
+import 'Screens/invoice.dart';
 import 'Screens/new_sale.dart';
 import 'constants.dart';
 import 'login.dart';
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> pages = [
       const Dashboard(),
       const NewSale(),
-      const NewSale(),
+      const InvoiceScreen(),
       const AddStock(),
       const InStock(),
       const Return(),

@@ -5,7 +5,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../Models/data.dart';
 import '../constants.dart';
-import '../home.dart';
 
 class AlertStock extends StatefulWidget {
   const AlertStock({Key? key}) : super(key: key);
@@ -125,75 +124,79 @@ class _AlertStockState extends State<AlertStock> {
                               : Container()
                     ],
                   ),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        // createDataTable()
-                        DataTable(
-                            columns: const [
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'Date',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'ID',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'Name',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'Purchasing Price',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'In Stock',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                              DataColumn(
-                                  label: Flexible(
-                                      fit: FlexFit.loose,
-                                      child: Text(
-                                        'Total Price',
-                                        softWrap: false,
-                                        overflow: TextOverflow.ellipsis,
-                                      ))),
-                            
-                            ],
-                            rows: alertItems
-                                .map((item) => DataRow(cells: [
-                                      DataCell(Text(item.date)),
-                                      DataCell(Text(item.uid)),
-                                      DataCell(Text(item.name)),
-                                      DataCell(Text('${item.pp}')),
-                                      DataCell(Text('${item.items}',style: TextStyle(fontSize: 18,fontWeight: bold),)),
-                                      DataCell(Text('Rs. ${item.total}')),
-                                    ]))
-                                .toList())
-                      ],
-                    ),
+                  Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.all(16),
+                          children: [
+                            // createDataTable()
+                            DataTable(
+                                columns: const [
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'Date',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'ID',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'Name',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'Purchasing Price',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'In Stock',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                  DataColumn(
+                                      label: Flexible(
+                                          fit: FlexFit.loose,
+                                          child: Text(
+                                            'Total Price',
+                                            softWrap: false,
+                                            overflow: TextOverflow.ellipsis,
+                                          ))),
+                                
+                                ],
+                                rows: alertItems
+                                    .map((item) => DataRow(cells: [
+                                          DataCell(Text(item.date)),
+                                          DataCell(Text(item.uid)),
+                                          DataCell(Text(item.name)),
+                                          DataCell(Text('${item.pp}')),
+                                          DataCell(Text('${item.items}',style: TextStyle(fontSize: 18,fontWeight: bold),)),
+                                          DataCell(Text('Rs. ${item.total}')),
+                                        ]))
+                                    .toList())
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
