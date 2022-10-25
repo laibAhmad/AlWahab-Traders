@@ -43,8 +43,7 @@ dependencies:
   data_tables: ^1.4.0
   pdf: ^3.8.2
   printing: ^5.9.2
-  dropdown_textfield: ^1.0.5
-  expandable: ^5.0.1
+  month_year_picker: ^0.2.0+2
 
 dev_dependencies:
   flutter_test:

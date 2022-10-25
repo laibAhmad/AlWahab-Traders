@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import '../Models/data.dart';
 import '../constants.dart';
 import '../home.dart';
@@ -24,16 +25,21 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   TextEditingController expenseName = TextEditingController();
   TextEditingController price = TextEditingController();
 
+  NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
+
   String expense = '';
   int spend = 0;
 
-  int pp = 0;
-  int items = 0;
-  String name = '';
-  String uid = '';
-  String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+  int totalExpense = 0;
+
+  String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String expenseDate = DateFormat('yMMM').format(DateTime.now());
+  String expenseMonthNum = DateFormat('y-MM').format(DateTime.now());
   String error = '';
 
+  String fielderror = '';
+
+  DateTime? month;
   bool load = false;
 
   String search = 'Cash';
@@ -42,35 +48,79 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   @override
   void initState() {
-    getData();
+    getData(0);
 
     super.initState();
   }
 
-  Future<List<Expenses>> getData() async {
-    await expenseRef.get().asStream().forEach((element) {
-      for (var element in element) {
-        Expenses list = Expenses(
-            date: element['date'],
-            expenseName: element['expense'],
-            spentRs: element['spent'],
-            spendfrom: element['spentFrom'],
-            id: element.id);
+  Future<List<Expenses>> getData(int n) async {
+    expenseItems.clear();
 
-        expenseItems.add(list);
-        getSortList();
-        setState(() {});
-      }
-    });
+    if (n == 0) {
+      await expenseRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          if ((element['date']).toString().contains(expenseMonthNum)) {
+            Expenses list = Expenses(
+                date: element['date'],
+                expenseName: element['expense'],
+                spentRs: element['spent'],
+                spendfrom: element['spentFrom'],
+                id: element.id);
+
+            expenseItems.add(list);
+            getSortList();
+            getTotalExpense();
+            setState(() {});
+          }
+        }
+      }).whenComplete(() {
+        if (expenseItems.isEmpty) {
+          setState(() {
+            error = 'No Data';
+          });
+        }
+      });
+    } else {
+      await expenseRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          Expenses list = Expenses(
+              date: element['date'],
+              expenseName: element['expense'],
+              spentRs: element['spent'],
+              spendfrom: element['spentFrom'],
+              id: element.id);
+
+          expenseItems.add(list);
+          getSortList();
+          getTotalExpense();
+          setState(() {});
+        }
+      }).whenComplete(() {
+        if (expenseItems.isEmpty) {
+          setState(() {
+            error = 'No Data';
+          });
+        }
+      });
+    }
     return expenseItems;
+  }
+
+  int getTotalExpense() {
+    for (var i = 0; i < expenseItems.length; i++) {
+      setState(() {
+        totalExpense = totalExpense + expenseItems[i].spentRs;
+      });
+    }
+    return totalExpense;
   }
 
   getSortList() {
     expenseItems.sort((a, b) {
-      return a.date
+      return b.date
           .toString()
           .toLowerCase()
-          .compareTo(b.date.toString().toLowerCase());
+          .compareTo(a.date.toString().toLowerCase());
     });
   }
 
@@ -86,16 +136,44 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
             decoration: BoxDecoration(color: Colors.pink.withOpacity(0.15)),
             width: size.width * 0.85,
-            height: size.height * 0.22,
+            height: size.height * 0.17,
             alignment: Alignment.bottomLeft,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Your Expense                   $date',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    const Text(
+                      'Add Expense                   ',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2022),
+                            lastDate: DateTime.now());
+
+                        if (pickedDate != null) {
+                          String formattedDate =
+                              DateFormat('yyyy-MM-dd').format(pickedDate);
+
+                          setState(() {
+                            date =
+                                formattedDate; //set output date to TextField value.
+                          });
+                        } else {}
+                      },
+                      child: Text(
+                        date,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(
                   width: size.width * 0.7,
@@ -209,11 +287,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 });
                               });
                               setState(() {
-                                error = '';
+                                fielderror = '';
                               });
                             } else {
                               setState(() {
-                                error = 'Please fill all details carefully!';
+                                fielderror =
+                                    'Please fill all details carefully!';
                               });
                             }
                           },
@@ -232,20 +311,76 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     ],
                   ),
                 ),
-                Text(error),
+                Text(fielderror),
               ],
             ),
           ),
           SizedBox(
               width: size.width * 0.85,
-              height: size.height * 0.65,
+              height: size.height * 0.7,
               child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Your Expenses'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Your Expenses of - '),
+                              InkWell(
+                                onTap: () async {
+                                  DateTime? pickedDate =
+                                      await showMonthYearPicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2022),
+                                    lastDate: DateTime.now()
+                                        .add(const Duration(days: 1)),
+                                  );
+
+                                  if (pickedDate != null) {
+                                    String formattedDate =
+                                        DateFormat('yMMM').format(pickedDate);
+
+                                    String numM =
+                                        DateFormat('y-MM').format(pickedDate);
+                                    setState(() {
+                                      expenseDate = formattedDate;
+                                      expenseMonthNum = numM;
+                                      error = '';
+                                      getData(0);
+                                      totalExpense = 0;
+                                      totalExpense = getTotalExpense();
+                                    });
+                                  } else {}
+                                },
+                                child: Text(
+                                  expenseDate,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                expenseDate = 'Select Month';
+                                getData(1);
+                                totalExpense = 0;
+                                totalExpense = getTotalExpense();
+                              });
+                            },
+                            child: const Text(
+                              'Want to see ALL Expenses? Click here...',
+                              style: TextStyle(fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
                       expenseItems.isEmpty
                           ? error != ''
                               ? Center(child: Text(error))
@@ -256,11 +391,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                   ),
                                 )
                           : SizedBox(
-                              // color: grey,
                               width: size.width * 0.85,
-                              height: size.height*0.55,
+                              height: size.height * 0.6,
                               child: ListView(
-                                
                                 shrinkWrap: true,
                                 children: [
                                   DataTable(
@@ -318,7 +451,50 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               ),
                             ),
                     ],
-                  )))
+                  ))),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SizedBox(
+              width: size.width * 0.75,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      text: '',
+                      style: DefaultTextStyle.of(context).style,
+                      children: <TextSpan>[
+                        const TextSpan(
+                            text: 'Total Expenses:  ',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextSpan(text: ' Rs. ${myFormat.format(totalExpense)}'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ]);
+  }
+
+  Future<void> onPressed({
+    required BuildContext context,
+    String? locale,
+  }) async {
+    final localeObj = locale != null ? Locale(locale) : null;
+    final selected = await showMonthYearPicker(
+      context: context,
+      initialDate: month ?? DateTime.now(),
+      firstDate: DateTime(2019),
+      lastDate: DateTime.now(),
+      locale: localeObj,
+    );
+  
+    if (selected != null) {
+      setState(() {
+        month = selected;
+      });
+    }
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/src/material/data_table.dart';
 
 class InStockData {
   String uid, name, date;
@@ -90,6 +89,7 @@ class Expenses {
 
 class Customers {
   String customerName;
+  int cr;
   dynamic id;
-  Customers({required this.customerName, required this.id});
+  Customers({required this.customerName,required this.cr, required this.id});
 }

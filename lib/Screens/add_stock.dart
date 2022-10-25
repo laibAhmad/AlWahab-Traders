@@ -47,216 +47,218 @@ class _AddStockState extends State<AddStock> {
             style: TextStyle(fontWeight: bold, fontSize: size.width * 0.02),
           ),
         ),
-        SizedBox(
-          width: size.width * 0.6,
-          height: size.height * 0.7,
-          child: Padding(
-            padding: EdgeInsets.all(size.width * 0.05),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  date,
-                  style: TextStyle(fontSize: fsize20),
-                ),
-                SizedBox(
-                  // width: size.width * 0.4,
-                  child: TextFormField(
-                    controller: id,
-                    decoration: InputDecoration(
-                      label: Text(
-                        'ID of Item',
-                        style: TextStyle(color: black),
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: darkgrey,
-                          width: 2.0,
-                        ),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: darkgrey,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    onChanged: (val) {
-                      setState(() {
-                        uid = id.text;
-                      });
-                    },
+        Form(
+          child: SizedBox(
+            width: size.width * 0.6,
+            height: size.height * 0.7,
+            child: Padding(
+              padding: EdgeInsets.all(size.width * 0.05),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    date,
+                    style: TextStyle(fontSize: fsize20),
                   ),
-                ),
-                SizedBox(
-                  // width: size.width * 0.5,
-                  child: TextFormField(
-                    controller: itemName,
-                    decoration: InputDecoration(
-                      label: Text(
-                        'Name of Item',
-                        style: TextStyle(color: black),
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: darkgrey,
-                          width: 2.0,
+                  SizedBox(
+                    // width: size.width * 0.4,
+                    child: TextFormField(
+                      controller: id,
+                      decoration: InputDecoration(
+                        label: Text(
+                          'ID of Item',
+                          style: TextStyle(color: black),
                         ),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: darkgrey,
-                          width: 2.0,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: darkgrey,
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: darkgrey,
+                            width: 2.0,
+                          ),
                         ),
                       ),
+                      onChanged: (val) {
+                        setState(() {
+                          uid = id.text;
+                        });
+                      },
                     ),
-                    onChanged: (val) {
-                      setState(() {
-                        name = itemName.text;
-                      });
-                    },
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: size.width * 0.23,
-                      child: TextFormField(
-                        controller: totalItems,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
+                  SizedBox(
+                    // width: size.width * 0.5,
+                    child: TextFormField(
+                      controller: itemName,
+                      decoration: InputDecoration(
+                        label: Text(
+                          'Name of Item',
+                          style: TextStyle(color: black),
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: darkgrey,
+                            width: 2.0,
+                          ),
+                          borderRadius: BorderRadius.circular(5.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: darkgrey,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          name = itemName.text;
+                        });
+                      },
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: size.width * 0.23,
+                        child: TextFormField(
+                          controller: totalItems,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            label: Text(
+                              'No. of Items',
+                              style: TextStyle(color: black),
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: darkgrey,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: darkgrey,
+                                width: 2.0,
+                              ),
+                            ),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              items = int.parse(val.trim());
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: size.width * 0.26,
+                        child: TextFormField(
+                          controller: pricePerUnit,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Price per peice',
+                              style: TextStyle(color: black),
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: darkgrey,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: darkgrey,
+                                width: 2.0,
+                              ),
+                            ),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              pp = int.parse(val.trim());
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: size.width * 0.8,
+                    child: Text('Total Price: Rs. ${pp * items}',
+                        style: TextStyle(fontSize: fsize20),
+                        textAlign: TextAlign.end),
+                  ),
+                  SizedBox(
+                    width: size.width * 0.8,
+                    child: Text(error,
+                        style: TextStyle(color: Colors.red, fontWeight: bold),
+                        textAlign: TextAlign.center),
+                  ),
+                  SizedBox(
+                    width: size.width * 0.8,
+                    height: size.height * 0.05,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (name != '' && uid != '' && pp != 0 && items != 0) {
+                          setState(() {
+                            load = true;
+                          });
+                          Firestore.instance
+                              .collection("AWT")
+                              .document('inventory')
+                              .collection('stock')
+                              .add({
+                            'id': uid,
+                            'name': name,
+                            'pricePerPiece': pp,
+                            'totalItems': items,
+                            'price': pp * items,
+                            'date': date,
+                          }).then((value) {
+                            setState(() {
+                              load = false;
+                              index = 0;
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const HomeScreen()));
+                            });
+                          });
+                          setState(() {
+                            error = '';
+                          });
+                        } else {
+                          setState(() {
+                            error = 'Please fill all details carefully!';
+                          });
+                        }
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          load
+                              ? SpinKitWave(
+                                  size: size.height * 0.035,
+                                  color: white,
+                                )
+                              : const Text("Enter"),
                         ],
-                        decoration: InputDecoration(
-                          label: Text(
-                            'No. of Items',
-                            style: TextStyle(color: black),
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: darkgrey,
-                              width: 2.0,
-                            ),
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: darkgrey,
-                              width: 2.0,
-                            ),
-                          ),
-                        ),
-                        onChanged: (val) {
-                          setState(() {
-                            items = int.parse(val.trim());
-                          });
-                        },
                       ),
-                    ),
-                    SizedBox(
-                      width: size.width * 0.26,
-                      child: TextFormField(
-                        controller: pricePerUnit,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        decoration: InputDecoration(
-                          label: Text(
-                            'Price per peice',
-                            style: TextStyle(color: black),
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: darkgrey,
-                              width: 2.0,
-                            ),
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: darkgrey,
-                              width: 2.0,
-                            ),
-                          ),
-                        ),
-                        onChanged: (val) {
-                          setState(() {
-                            pp = int.parse(val.trim());
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: size.width * 0.8,
-                  child: Text('Total Price: Rs. ${pp * items}',
-                      style: TextStyle(fontSize: fsize20),
-                      textAlign: TextAlign.end),
-                ),
-                SizedBox(
-                  width: size.width * 0.8,
-                  child: Text(error,
-                      style: TextStyle(color: Colors.red, fontWeight: bold),
-                      textAlign: TextAlign.center),
-                ),
-                SizedBox(
-                  width: size.width * 0.8,
-                  height: size.height * 0.05,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (name != '' && uid != '' && pp != 0 && items != 0) {
-                        setState(() {
-                          load = true;
-                        });
-                        Firestore.instance
-                            .collection("AWT")
-                            .document('inventory')
-                            .collection('stock')
-                            .add({
-                          'id': uid,
-                          'name': name,
-                          'pricePerPiece': pp,
-                          'totalItems': items,
-                          'price': pp * items,
-                          'date': date,
-                        }).then((value) {
-                          setState(() {
-                            load = false;
-                            index = 0;
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const HomeScreen()));
-                          });
-                        });
-                        setState(() {
-                          error = '';
-                        });
-                      } else {
-                        setState(() {
-                          error = 'Please fill all details carefully!';
-                        });
-                      }
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        load
-                            ? SpinKitWave(
-                                size: size.height * 0.035,
-                                color: white,
-                              )
-                            : const Text("Enter"),
-                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

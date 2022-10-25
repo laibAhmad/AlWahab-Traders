@@ -14,6 +14,11 @@ int bankRs = 0;
 int crRs = 0;
 int totalRs = 0;
 
+int todaySales =0;
+int cashSales = 0;
+int crSales = 0;
+int totalPcs = 0;
+
   int todayMain = 0;
   int weekMain = 0;
   int monthMain = 0;
@@ -28,6 +33,11 @@ int totalRs = 0;
   int weekNoMain = 0;
   int monthNoMain = 0;
   int yearNoMain = 0;
+
+  int todayCrMain = 0;
+  int weekCrMain = 0;
+  int monthCrMain = 0;
+  int yearCrMain = 0;
 
 dynamic l;
 
@@ -82,24 +92,36 @@ CollectionReference expenseRef = Firestore.instance
     .document('inventory')
     .collection('expenses');
 
+    
+  CollectionReference pos = Firestore.instance
+      .collection("AWT")
+      .document('inventory')
+      .collection('POS');
+
+  CollectionReference customerRef = Firestore.instance
+      .collection("AWT")
+      .document('inventory')
+      .collection('customers');
 
 int indexList = -1;
 
-IconData salesicon =Icons.price_check_rounded;
+IconData salesicon =Icons.money;
+
+IconData cricon =Icons.paid;
 
 IconData earnicon=Icons.assignment_turned_in_rounded;
 
-IconData profiticon = Icons.trending_up_rounded; 
+IconData profiticon = Icons.numbers; 
 
 String kmbgenerator(int n) {
   if (n > 999 && n < 99999) {
-    return "${(n / 1000).toStringAsFixed(1)}K";
+    return "${(n / 1000).toStringAsFixed(3)}K";
   } else if (n > 99999 && n < 999999) {
-    return "${(n / 1000).toStringAsFixed(0)}K";
+    return "${(n / 1000).toStringAsFixed(3)}K";
   } else if (n > 999999 && n < 999999999) {
-    return "${(n / 1000000).toStringAsFixed(1)}M";
+    return "${(n / 1000000).toStringAsFixed(3)}M";
   } else if (n > 999999999) {
-    return "${(n / 1000000000).toStringAsFixed(1)}B";
+    return "${(n / 1000000000).toStringAsFixed(3)}B";
   } else {
     return n.toString();
   }

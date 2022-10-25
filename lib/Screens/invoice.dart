@@ -1,14 +1,12 @@
-import 'package:expandable/expandable.dart';
 import 'package:firedart/firestore/firestore.dart';
 import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 import '../Models/data.dart';
 import '../constants.dart';
-import '../home.dart';
 
 class InvoiceScreen extends StatefulWidget {
   const InvoiceScreen({Key? key}) : super(key: key);
@@ -26,6 +24,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   TextEditingController expenseName = TextEditingController();
   TextEditingController price = TextEditingController();
 
+  NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
+
   String expense = '';
   int spend = 0;
 
@@ -33,7 +33,12 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   int items = 0;
   String name = '';
   String uid = '';
-  String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+
+  String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String invoiceDate = 'Select Month';
+  // DateFormat('yMMM').format(DateTime.now());
+  String invoiceMonthNum = DateFormat('y-MM').format(DateTime.now());
+
   String error = '';
 
   bool load = false;
@@ -42,35 +47,111 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   List<Invoices> ivoices = [];
 
-  Future<List<Invoices>> getInvoices() async {
-    int index=-1;
-    await invoiceRef.get().asStream().forEach((element) {
-      for (var element in element) {
-        index=index+1;
-        Invoices list = Invoices(
-            date: element['date'],
-            id: element.id,
-            bank: element['bankRs'],
-            cash: element['cashRs'],
-            cr: element['crRs'],
-            netTotal: element['netTotal'],
-            profit: element['profit'],
-            cname: element['customer'],
-            invo: element['inovno'],
-            paytype: element['payType'],
-            totalitems: element['totalItems'],
-            invoiceitems: [], index: index);
+  Future<List<Invoices>> getInvoices(int n) async {
+    ivoices.clear();
+    int index = -1;
+    if (n == 0) {
+      await invoiceRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          index = index + 1;
+          if ((element['date']).toString().contains(invoiceMonthNum)) {
+            Invoices list = Invoices(
+                date: element['date'],
+                id: element.id,
+                bank: element['bankRs'],
+                cash: element['cashRs'],
+                cr: element['crRs'],
+                netTotal: element['netTotal'],
+                profit: element['profit'],
+                cname: element['customer'],
+                invo: element['inovno'],
+                paytype: element['payType'],
+                totalitems: element['totalItems'],
+                invoiceitems: [],
+                index: index);
 
-        ivoices.add(list);
+            ivoices.add(list);
 
-        setState(() {});
-      }
-    });
+            setState(() {});
+          }
+        }
+      }).whenComplete(() {
+        if (ivoices.isEmpty) {
+          setState(() {
+            error = 'No Invoices yet';
+          });
+        }
+      });
+    } else if (n == 2) {
+      await invoiceRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          index = index + 1;
+          if ((element['date']).toString().contains(date)) {
+            Invoices list = Invoices(
+                date: element['date'],
+                id: element.id,
+                bank: element['bankRs'],
+                cash: element['cashRs'],
+                cr: element['crRs'],
+                netTotal: element['netTotal'],
+                profit: element['profit'],
+                cname: element['customer'],
+                invo: element['inovno'],
+                paytype: element['payType'],
+                totalitems: element['totalItems'],
+                invoiceitems: [],
+                index: index);
+
+            ivoices.add(list);
+
+            setState(() {});
+          }
+        }
+      }).whenComplete(() {
+        if (ivoices.isEmpty) {
+          setState(() {
+            error = 'No Invoices yet';
+          });
+        }
+      });
+    } else if(n==1) {
+      await invoiceRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          index = index + 1;
+          Invoices list = Invoices(
+              date: element['date'],
+              id: element.id,
+              bank: element['bankRs'],
+              cash: element['cashRs'],
+              cr: element['crRs'],
+              netTotal: element['netTotal'],
+              profit: element['profit'],
+              cname: element['customer'],
+              invo: element['inovno'],
+              paytype: element['payType'],
+              totalitems: element['totalItems'],
+              invoiceitems: [],
+              index: index);
+
+          ivoices.add(list);
+
+          setState(() {});
+        }
+      }).whenComplete(() {
+        if (ivoices.isEmpty) {
+          setState(() {
+            error = 'No Invoices yet';
+          });
+        }
+      });
+    }
     getInvoiceItems();
+    getSortList();
     return ivoices;
   }
 
   getInvoiceItems() async {
+
     for (var i = 0; i < ivoices.length; i++) {
       await invoiceRef
           .document(ivoices[i].id)
@@ -89,33 +170,26 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
           ivoices[i].invoiceitems.add(l);
           setState(() {});
-          
         }
       });
-      for (var j = 0; j < ivoices[i].invoiceitems.length; j++) {
-        print(ivoices[i].invoiceitems[j].iname);
-      }
     }
   }
 
   @override
   void initState() {
-    getInvoices();
+    getInvoices(2);
 
     // getInvoiceItems();
 
     super.initState();
   }
 
-  static const loremIpsum =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-
   getSortList() {
     ivoices.sort((a, b) {
-      return a.date
+      return b.invo
           .toString()
           .toLowerCase()
-          .compareTo(b.date.toString().toLowerCase());
+          .compareTo(a.invo.toString().toLowerCase());
     });
   }
 
@@ -127,165 +201,101 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
-            decoration: BoxDecoration(color: Colors.green.withOpacity(0.15)),
-            width: size.width * 0.85,
-            height: size.height * 0.15,
-            alignment: Alignment.bottomLeft,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: size.width * 0.7,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: size.width * 0.23,
-                        child: TextFormField(
-                          controller: expenseName,
-                          decoration: InputDecoration(
-                            label: Text(
-                              'Expense...',
-                              style: TextStyle(color: black),
-                            ),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              expense = val;
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: size.width * 0.2,
-                        child: TextFormField(
-                          controller: price,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          decoration: InputDecoration(
-                            label: Text(
-                              'Rs. Spent',
-                              style: TextStyle(color: black),
-                            ),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              spend = int.parse(val.trim());
-                            });
-                          },
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Text('Spent From:   ',
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.bold)),
-                          DropdownButton<String>(
-                            value: search,
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                            elevation: 16,
-                            style: TextStyle(color: black),
-                            underline: Container(
-                              height: 2,
-                              color: black,
-                            ),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                search = newValue!;
-                              });
-                            },
-                            items: <String>[
-                              'Cash',
-                              'Bank',
-                            ].map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: size.width * 0.07,
-                        height: size.height * 0.05,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            // if (expense != '' && spend != 0) {
-                            //   setState(() {
-                            //     load = true;
-                            //   });
-                            //   Firestore.instance
-                            //       .collection("AWT")
-                            //       .document('inventory')
-                            //       .collection('expenses')
-                            //       .add({
-                            //     'expense': expense,
-                            //     'date': date,
-                            //     'spent': spend,
-                            //     'spentFrom': search,
-                            //   }).then((value) {
-                            //     if (search == 'Cash') {
-                            //       pos
-                            //           .document('Cash Rs')
-                            //           .set({'cash': (cashRs - spend)});
-                            //     } else {
-                            //       pos
-                            //           .document('Bank Rs')
-                            //           .set({'bank': (bankRs - spend)});
-                            //     }
-                            //     setState(() {
-                            //       load = false;
-                            //       index = 6;
-                            //       Navigator.pushReplacement(
-                            //           context,
-                            //           MaterialPageRoute(
-                            //               builder: (context) =>
-                            //                   const HomeScreen()));
-                            //     });
-                            //   });
-                            //   setState(() {
-                            //     error = '';
-                            //   });
-                            // } else {
-                            //   setState(() {
-                            //     error = 'Please fill all details carefully!';
-                            //   });
-                            // }
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              load
-                                  ? SpinKitWave(
-                                      size: size.height * 0.02, color: white)
-                                  : const Text("Save"),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(error),
-              ],
-            ),
-          ),
           SizedBox(
               width: size.width * 0.85,
-              height: size.height * 0.75,
+              height: size.height * 0.9,
               child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Your Expenses'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Invoices of - '),
+                              InkWell(
+                                onTap: () async {
+                                  DateTime? pickedDate = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2022),
+                                      lastDate: DateTime.now());
+
+                                  if (pickedDate != null) {
+                                    String formattedDate =
+                                        DateFormat('yyyy-MM-dd')
+                                            .format(pickedDate);
+                                    getInvoices(2);
+                                    setState(() {
+                                      date =
+                                          formattedDate; //set output date to TextField value.
+                                    });
+                                  } else {}
+                                },
+                                child: Text(
+                                  date,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () async {
+                                  DateTime? pickedDate =
+                                      await showMonthYearPicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2022),
+                                    lastDate: DateTime.now()
+                                        .add(const Duration(days: 1)),
+                                  );
+
+                                  if (pickedDate != null) {
+                                    String formattedDate =
+                                        DateFormat('yMMM').format(pickedDate);
+
+                                    String numM =
+                                        DateFormat('y-MM').format(pickedDate);
+                                    setState(() {
+                                      invoiceDate = formattedDate;
+                                      invoiceMonthNum = numM;
+                                      error = '';
+                                      date='Select Date';
+                                      getInvoices(0);
+                                    });
+                                  } else {}
+                                },
+                                child: Text(
+                                  '$invoiceDate     ',
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    invoiceDate = 'Select Month';
+                                    date='Select Date';
+                                    getInvoices(1);
+                                  });
+                                },
+                                child: const Text(
+                                  'Want to see ALL Invoices? Click here...',
+                                  style: TextStyle(fontSize: 11),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Text('Invoices:   ${ivoices.length}'),
                       ivoices.isEmpty
                           ? error != ''
                               ? Center(child: Text(error))
@@ -297,276 +307,243 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 )
                           : SizedBox(
                               width: size.width * 0.85,
-                              height: size.height * 0.65,
+                              height: size.height * 0.75,
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: ivoices.length,
-                                itemBuilder: (BuildContext context, int index) {return ExpandableNotifier(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Card(
-                                      clipBehavior: Clip.antiAlias,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return Card(
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
                                       child: Column(
-                                        children: <Widget>[
-                                          Container(
-                                            color: Colors.grey.shade200,
-                                            height: 50,
-                                            child:
-                                            // Row(
-                                            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                            //   children: [
-                                            //   Text(ivoices[index].date),
-                                            //   Text('${ivoices[index].invo}'),
-                                            //   Text(ivoices[index].cname),
-                                            //   Text(ivoices[index].paytype),
-                                            //   Text('${ivoices[index].netTotal}'),
-                                            //   Text('${ivoices[index].totalitems}'),
-                                            //   Text(ivoices[index].date),
-                                            // ],)
-                                             DataTable(
-                                      columns: const [
-                                        DataColumn(
-                                            label: Flexible(
-                                                fit: FlexFit.loose,
-                                                child: Text(
-                                                  'Date',
-                                                  softWrap: false,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ))),
-                                        DataColumn(
-                                            label: Flexible(
-                                                fit: FlexFit.loose,
-                                                child: Text(
-                                                  'Expense',
-                                                  softWrap: false,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ))),
-                                        DataColumn(
-                                            label: Flexible(
-                                                fit: FlexFit.loose,
-                                                child: Text(
-                                                  'Spent Rs',
-                                                  softWrap: false,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ))),
-                                        DataColumn(
-                                            label: Flexible(
-                                                fit: FlexFit.loose,
-                                                child: Text(
-                                                  'Spent From',
-                                                  softWrap: false,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ))),
-                                      ],
-                                      rows: 
-                                      ivoices
-                                          .map((item) =>const DataRow(cells: [
-                                                 DataCell(Text('')),
-                                                DataCell( Text('')),
-                                                DataCell(
-                                                    Text('')),
-                                                DataCell( Text(
-                                                  '',
-                                                )),
-                                              ]))
-                                          .toList())
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Invoice # :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text:
+                                                            '${ivoices[index].invo}'),
+                                                  ],
+                                                ),
+                                              ),
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Date :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text: ivoices[index]
+                                                            .date),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          ScrollOnExpand(
-                                            scrollOnExpand: true,
-                                            scrollOnCollapse: false,
-                                            child: ExpandablePanel(
-                                              theme: const ExpandableThemeData(
-                                                headerAlignment:
-                                                    ExpandablePanelHeaderAlignment
-                                                        .center,
-                                                tapBodyToCollapse: true,
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Cust. Name :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text: ivoices[index]
+                                                            .cname),
+                                                  ],
+                                                ),
                                               ),
-                                              header: Padding(
-                                                  padding: EdgeInsets.all(10),
-                                                  child: Text(
-                                                    "ExpandablePanel",
-                                                    // style: Theme.of(context).textTheme.body2,
-                                                  )),
-                                              collapsed: Text(
-                                                loremIpsum,
-                                                softWrap: true,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Net Total :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text:
+                                                            'Rs. ${myFormat.format(ivoices[index].netTotal)}'),
+                                                  ],
+                                                ),
                                               ),
-                                              expanded: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  for (var _
-                                                      in Iterable.generate(5))
-                                                    Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                bottom: 10),
-                                                        child: Text(
-                                                          loremIpsum,
-                                                          softWrap: true,
-                                                          overflow:
-                                                              TextOverflow.fade,
-                                                        )),
-                                                ],
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'T. Items :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text:
+                                                            '${ivoices[index].totalitems}'),
+                                                  ],
+                                                ),
                                               ),
-                                              builder:
-                                                  (_, collapsed, expanded) {
-                                                return Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 10,
-                                                      right: 10,
-                                                      bottom: 10),
-                                                  child: Expandable(
-                                                    collapsed: collapsed,
-                                                    expanded: expanded,
-                                                    theme:
-                                                        const ExpandableThemeData(
-                                                            crossFadePoint: 0),
-                                                  ),
-                                                );
-                                              },
+                                              RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Pay Type :  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                    TextSpan(
+                                                        text: ivoices[index]
+                                                            .paytype),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                              height: 20, child: Divider()),
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                  width: size.width * 0.03,
+                                                  child: const Text('#',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                              SizedBox(
+                                                  width: size.width * 0.07,
+                                                  child: const Text('Inv. #',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                              SizedBox(
+                                                  width: size.width * 0.22,
+                                                  child: const Text('Items',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                              SizedBox(
+                                                  width: size.width * 0.1,
+                                                  child: const Text('Qty',
+                                                      textAlign: TextAlign.end,
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                              SizedBox(
+                                                  width: size.width * 0.18,
+                                                  child: const Text('Per Price',
+                                                      textAlign: TextAlign.end,
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                              SizedBox(
+                                                  width: size.width * 0.2,
+                                                  child: const Text('Total',
+                                                      textAlign: TextAlign.end,
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight
+                                                              .w600))),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          for (int i = 0;
+                                              i <
+                                                  ivoices[index]
+                                                      .invoiceitems
+                                                      .length;
+                                              i++)
+                                            Row(
+                                              children: [
+                                                SizedBox(
+                                                    width: size.width * 0.03,
+                                                    child: Text('${i + 1}')),
+                                                SizedBox(
+                                                    width: size.width * 0.07,
+                                                    child: Text(ivoices[index]
+                                                        .invoiceitems[i]
+                                                        .ino)),
+                                                SizedBox(
+                                                    width: size.width * 0.22,
+                                                    child: Text(ivoices[index]
+                                                        .invoiceitems[i]
+                                                        .iname)),
+                                                SizedBox(
+                                                    width: size.width * 0.1,
+                                                    child: Text(
+                                                        '${ivoices[index].invoiceitems[i].isold}',
+                                                        textAlign:
+                                                            TextAlign.end)),
+                                                SizedBox(
+                                                    width: size.width * 0.18,
+                                                    child: Text(
+                                                        '${ivoices[index].invoiceitems[i].iPrice}',
+                                                        textAlign:
+                                                            TextAlign.end)),
+                                                SizedBox(
+                                                    width: size.width * 0.2,
+                                                    child: Text(
+                                                        'Rs. ${myFormat.format(ivoices[index].invoiceitems[i].totalsold)}',
+                                                        textAlign:
+                                                            TextAlign.end)),
+                                              ],
                                             ),
-                                          ),
                                         ],
                                       ),
                                     ),
-                                  )); },
-                                // children: [
-                                  // ExpandableNotifier(
-                                  //     child: Padding(
-                                  //   padding: const EdgeInsets.all(10),
-                                  //   child: Card(
-                                  //     clipBehavior: Clip.antiAlias,
-                                  //     child: Column(
-                                  //       children: <Widget>[
-                                  //         SizedBox(
-                                  //           height: 150,
-                                  //           child: Container(
-                                  //             decoration: BoxDecoration(
-                                  //               color: Colors.orange,
-                                  //               shape: BoxShape.rectangle,
-                                  //             ),
-                                  //           ),
-                                  //         ),
-                                  //         ScrollOnExpand(
-                                  //           scrollOnExpand: true,
-                                  //           scrollOnCollapse: false,
-                                  //           child: ExpandablePanel(
-                                  //             theme: const ExpandableThemeData(
-                                  //               headerAlignment:
-                                  //                   ExpandablePanelHeaderAlignment
-                                  //                       .center,
-                                  //               tapBodyToCollapse: true,
-                                  //             ),
-                                  //             header: Padding(
-                                  //                 padding: EdgeInsets.all(10),
-                                  //                 child: Text(
-                                  //                   "ExpandablePanel",
-                                  //                   // style: Theme.of(context).textTheme.body2,
-                                  //                 )),
-                                  //             collapsed: Text(
-                                  //               loremIpsum,
-                                  //               softWrap: true,
-                                  //               maxLines: 2,
-                                  //               overflow: TextOverflow.ellipsis,
-                                  //             ),
-                                  //             expanded: Column(
-                                  //               crossAxisAlignment:
-                                  //                   CrossAxisAlignment.start,
-                                  //               children: <Widget>[
-                                  //                 for (var _
-                                  //                     in Iterable.generate(5))
-                                  //                   Padding(
-                                  //                       padding:
-                                  //                           EdgeInsets.only(
-                                  //                               bottom: 10),
-                                  //                       child: Text(
-                                  //                         loremIpsum,
-                                  //                         softWrap: true,
-                                  //                         overflow:
-                                  //                             TextOverflow.fade,
-                                  //                       )),
-                                  //               ],
-                                  //             ),
-                                  //             builder:
-                                  //                 (_, collapsed, expanded) {
-                                  //               return Padding(
-                                  //                 padding: EdgeInsets.only(
-                                  //                     left: 10,
-                                  //                     right: 10,
-                                  //                     bottom: 10),
-                                  //                 child: Expandable(
-                                  //                   collapsed: collapsed,
-                                  //                   expanded: expanded,
-                                  //                   theme:
-                                  //                       const ExpandableThemeData(
-                                  //                           crossFadePoint: 0),
-                                  //                 ),
-                                  //               );
-                                  //             },
-                                  //           ),
-                                  //         ),
-                                  //       ],
-                                  //     ),
-                                  //   ),
-                                  // )),
-                                //   DataTable(
-                                //       columns: const [
-                                //         DataColumn(
-                                //             label: Flexible(
-                                //                 fit: FlexFit.loose,
-                                //                 child: Text(
-                                //                   'Date',
-                                //                   softWrap: false,
-                                //                   overflow:
-                                //                       TextOverflow.ellipsis,
-                                //                 ))),
-                                //         DataColumn(
-                                //             label: Flexible(
-                                //                 fit: FlexFit.loose,
-                                //                 child: Text(
-                                //                   'Expense',
-                                //                   softWrap: false,
-                                //                   overflow:
-                                //                       TextOverflow.ellipsis,
-                                //                 ))),
-                                //         DataColumn(
-                                //             label: Flexible(
-                                //                 fit: FlexFit.loose,
-                                //                 child: Text(
-                                //                   'Spent Rs',
-                                //                   softWrap: false,
-                                //                   overflow:
-                                //                       TextOverflow.ellipsis,
-                                //                 ))),
-                                //         DataColumn(
-                                //             label: Flexible(
-                                //                 fit: FlexFit.loose,
-                                //                 child: Text(
-                                //                   'Spent From',
-                                //                   softWrap: false,
-                                //                   overflow:
-                                //                       TextOverflow.ellipsis,
-                                //                 ))),
-                                //       ],
-                                //       rows: ivoices
-                                //           .map((item) => DataRow(cells: [
-                                //                 DataCell(Text(item.date)),
-                                //                 DataCell(Text('item.invoiceitems[item.index].iname')),
-                                //                 DataCell(
-                                //                     Text('${item.totalitems}')),
-                                //                 DataCell(Text(
-                                //                   item.cname,
-                                //                 )),
-                                //               ]))
-                                //           .toList()),
-                                // ]
+                                  );
+                                },
                               ),
                             ),
                     ],

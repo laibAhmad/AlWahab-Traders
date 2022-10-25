@@ -97,6 +97,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         elevation: 0,
         actions: [
+          IconButton(
+              onPressed: () async {
+                setState(() {
+                  index = 9;
+                });
+              },
+              icon:const Icon(Icons.date_range)),
           // getAlertItems()
           //     ?
           IconButton(
@@ -134,23 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
             width: size.width * 0.15,
             height: size.height,
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            
               children: [
-                // Row(
-                //   crossAxisAlignment: CrossAxisAlignment.center,
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     SizedBox(
-                //       height: size.height * 0.2,
-                //       child: Center(
-                //         child: Image.asset(
-                //           'assets/img/logo.png',
-                //           width: size.width * 0.1,
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
+             
                 const SizedBox(height: 20),
                 SizedBox(
                   height: size.height * 0.5,
@@ -407,6 +400,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: TextStyle(
                                     color: index == 6
                                         ? Colors.pink.shade700
+                                        : black,
+                                    fontSize: size.width * 0.01,
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            index = 7;
+                          });
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: index == 7
+                                ? Colors.deepPurple.withOpacity(0.2)
+                                : Colors.transparent,
+                            border: Border(
+                              right: BorderSide(
+                                  width: 5.0,
+                                  color: index == 7
+                                      ? Colors.deepPurple
+                                      : Colors.transparent),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                right: 8, left: 16, top: 8, bottom: 8),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('Customers',
+                                  style: TextStyle(
+                                    color: index == 7
+                                        ? Colors.deepPurple.shade900
                                         : black,
                                     fontSize: size.width * 0.01,
                                   )),

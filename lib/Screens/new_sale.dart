@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart';
@@ -52,10 +52,13 @@ class _NewSaleState extends State<NewSale> {
   String name = '';
   int inStock = 0;
   String uid = '';
-  String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+  String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
   String error = '';
+  String carterror = '';
 
   String custname = '';
+  String custID = '';
+  String custCR = '0';
 
   String cname = '';
   int selectedIndex = -1;
@@ -73,21 +76,22 @@ class _NewSaleState extends State<NewSale> {
 
   String dropdownValue = 'One';
 
-  getInvoice() {
+  int getInvoice() {
     if (invoiceNo == null) {
       setState(() {
-        invoiceNo = 1;
+        invoiceNo = 0;
       });
-    } else if (invoiceNo != null && invoiceNo! < 101) {
+    }
+    if (invoiceNo != 0 && invoiceNo! < 101) {
       setState(() {
         invoiceNo = invoiceNo!;
       });
-    } else if (invoiceNo! == 100) {
+    } else if (invoiceNo == 100 || invoiceNo! > 100) {
       setState(() {
         invoiceNo = 1;
       });
     }
-    return invoiceNo;
+    return invoiceNo!;
   }
 
   getTotalQty() {
@@ -124,9 +128,11 @@ class _NewSaleState extends State<NewSale> {
   }
 
   bool load = false;
+  bool buttonload = false;
 
   @override
   void initState() {
+    getInvoice();
     getCustomers();
     getData();
 
@@ -160,13 +166,13 @@ class _NewSaleState extends State<NewSale> {
   }
 
   Future<List<Customers>> getCustomers() async {
-    indexList = indexList - 1;
-    await invoiceRef.get().asStream().forEach((element) {
+    await customerRef.get().asStream().forEach((element) {
       customerList.clear();
       for (var element in element) {
         Customers list = Customers(
-          id: element['id'],
+          id: element.id,
           customerName: element['customer'],
+          cr: element['cr'],
         );
         customerList.add(list);
 
@@ -190,7 +196,8 @@ class _NewSaleState extends State<NewSale> {
     item.clear();
     for (var i = 0; i < customerList.length; i++) {
       setState(() {
-        item.add(customerList[i].customerName);
+        item.add(
+            '${customerList[i].customerName},${customerList[i].id}|${customerList[i].cr}');
       });
     }
     return item;
@@ -215,436 +222,494 @@ class _NewSaleState extends State<NewSale> {
       children: [
         Row(
           children: [
-            SizedBox(
-              width: size.width * 0.5,
-              height: size.height * 0.9,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: size.height * 0.05,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Invoice #  00${getInvoice() + 1}',
-                            style: TextStyle(fontSize: fsize15),
-                          ),
-                          Text(
-                            date,
-                            style: TextStyle(fontSize: fsize15),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: size.width * 0.17,
-                      height: size.height * 0.08,
-                      child: TextFormField(
-                        controller: cn,
-                        decoration: InputDecoration(
-                          label: Text(
-                            'Customer Name',
-                            style: TextStyle(color: black),
-                          ),
-                          suffixIcon: PopupMenuButton<dynamic>(
-                            icon: const Icon(Icons.arrow_drop_down),
-                            onSelected: (value) {
-                              cn.text = value;
-                            },
-                            itemBuilder: (BuildContext context) {
-                              return getMenuItems()
-                                  .map<PopupMenuItem<dynamic>>((value) {
-                                return PopupMenuItem(
-                                    value: value, child: Text(value));
-                              }).toList();
-                            },
-                          ),
-                        ),
-                        onChanged: (val) {
-                          setState(() {
-                            custname = val;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: size.width * 0.6,
-                      height: size.height * 0.07,
-                      child: Row(
-                        children: [
-                          DropdownButton<String>(
-                            value: search,
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                            elevation: 16,
-                            style: TextStyle(color: black),
-                            underline: Container(
-                              height: 2,
-                              color: black,
+            Form(
+              child: SizedBox(
+                width: size.width * 0.5,
+                height: size.height * 0.9,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: size.height * 0.05,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Invoice #  ${invoiceNo! + 1}',
+                              style: TextStyle(fontSize: fsize15),
                             ),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                pricePerUnit.clear();
-                                totalItems.clear();
-                                inText.clear();
+                            InkWell(
+                              onTap: () async {
+                                DateTime? pickedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2022),
+                                    lastDate: DateTime.now());
 
-                                search = newValue!;
-                              });
-                            },
-                            items: <String>[
-                              'Choose search by',
-                              'ID of items',
-                              'Name of Item'
-                            ].map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          ),
-                          SizedBox(
-                            width: size.width * 0.05,
-                          ),
-                          search == 'Choose search by'
-                              ? Container()
-                              : search == 'ID of items'
-                                  ? SizedBox(
-                                      width: size.width * 0.17,
-                                      child: TextFormField(
-                                        controller: inText,
-                                        decoration: InputDecoration(
-                                          label: Text(
-                                            'Search by ID',
-                                            style: TextStyle(color: black),
-                                          ),
-                                        ),
-                                        onChanged: (val) {
-                                          typeText.clear();
+                                if (pickedDate != null) {
+                                  String formattedDate =
+                                      DateFormat('yyyy-MM-dd')
+                                          .format(pickedDate);
 
-                                          setState(() {
-                                            cname = val;
-                                            select = false;
-
-                                            for (var i = 0;
-                                                i < itemsList1.length;
-                                                i++) {
-                                              if (itemsList1[i]
-                                                  .uid
-                                                  .toLowerCase()
-                                                  .contains(
-                                                      val.toLowerCase())) {
-                                                InStockData list = InStockData(
-                                                    uid: itemsList1[i].uid,
-                                                    date: itemsList1[i].date,
-                                                    name: itemsList1[i].name,
-                                                    total: itemsList1[i].total,
-                                                    pp: itemsList1[i].pp,
-                                                    items: itemsList1[i].items,
-                                                    index: itemsList1[i].index,
-                                                    id: itemsList1[i].id);
-
-                                                typeText.add(list);
-                                                typeText.sort((a, b) {
-                                                  return a.name
-                                                      .toString()
-                                                      .toLowerCase()
-                                                      .compareTo(b.name
-                                                          .toString()
-                                                          .toLowerCase());
-                                                });
-                                              }
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    )
-                                  : SizedBox(
-                                      width: size.width * 0.17,
-                                      child: TextFormField(
-                                        controller: inText,
-                                        decoration: InputDecoration(
-                                          label: Text(
-                                            'Search by Name',
-                                            style: TextStyle(color: black),
-                                          ),
-                                        ),
-                                        onChanged: (val) {
-                                          // typeText.clear();
-
-                                          setState(() {
-                                            typeText.clear();
-                                            cname = val;
-                                            select = false;
-                                            for (var i = 0;
-                                                i < itemsList1.length;
-                                                i++) {
-                                              if (itemsList1[i]
-                                                  .name
-                                                  .toLowerCase()
-                                                  .contains(
-                                                      val.toLowerCase())) {
-                                                InStockData list = InStockData(
-                                                    uid: itemsList1[i].uid,
-                                                    date: itemsList1[i].date,
-                                                    name: itemsList1[i].name,
-                                                    total: itemsList1[i].total,
-                                                    pp: itemsList1[i].pp,
-                                                    items: itemsList1[i].items,
-                                                    index: itemsList1[i].index,
-                                                    id: itemsList1[i].id);
-
-                                                typeText.add(list);
-
-                                                typeText.sort((a, b) {
-                                                  return a.name
-                                                      .toString()
-                                                      .toLowerCase()
-                                                      .compareTo(b.name
-                                                          .toString()
-                                                          .toLowerCase());
-                                                });
-                                              }
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ),
-                        ],
+                                  setState(() {
+                                    date =
+                                        formattedDate; //set output date to TextField value.
+                                  });
+                                } else {}
+                              },
+                              child: Text(
+                                date,
+                                style: TextStyle(fontSize: fsize15),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    inText.text.isEmpty
-                        ? SizedBox(
-                            height: size.height * 0.6,
-                          )
-                        : !select
-                            ? SizedBox(
-                                height: size.height * 0.6,
-                                child: ListView.builder(
-                                    itemCount: typeText.length,
-                                    itemBuilder: (BuildContext context, int i) {
-                                      return InkWell(
-                                        onTap: () {
-                                          InStockData list = InStockData(
-                                              uid: typeText[i].uid,
-                                              date: typeText[i].date,
-                                              name: typeText[i].name,
-                                              total: typeText[i].total,
-                                              pp: typeText[i].pp,
-                                              items: typeText[i].items,
-                                              index: typeText[i].index,
-                                              id: typeText[i].id);
-
-                                          selectedItems.add(list);
-
-                                          setState(() {
-                                            select = true;
-                                            name = typeText[i].name;
-                                            inStock = typeText[i].items;
-                                          });
-                                        },
-                                        child: Column(
-                                          children: [
-                                            ListTile(
-                                                leading: Text(typeText[i].uid),
-                                                trailing: Text(
-                                                  '${typeText[i].items} items In Stock',
-                                                  style: TextStyle(
-                                                      color: black,
-                                                      fontSize: 15),
-                                                ),
-                                                title: Text(typeText[i].name)),
-                                            const Divider(),
-                                          ],
-                                        ),
-                                      );
-                                    }),
-                              )
-                            : SizedBox(
-                                height: size.height * 0.53,
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: size.width * 0.01,
-                                      vertical: size.height * 0.03),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            height: size.height * 0.04,
-                                            child: RichText(
-                                              text: TextSpan(
-                                                text: '',
-                                                style:
-                                                    DefaultTextStyle.of(context)
-                                                        .style,
-                                                children: <TextSpan>[
-                                                  const TextSpan(
-                                                      text: 'Name of Item:  ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                  TextSpan(text: '   $name'),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              SizedBox(
-                                                width: size.width * 0.25,
-                                                child: TextFormField(
-                                                  controller: totalItems,
-                                                  inputFormatters: [
-                                                    FilteringTextInputFormatter
-                                                        .digitsOnly
-                                                  ],
-                                                  decoration: InputDecoration(
-                                                    label: Text(
-                                                      'No. of Items',
-                                                      style: TextStyle(
-                                                          color: black),
-                                                    ),
-                                                  ),
-                                                  onChanged: (val) {
-                                                    if (int.parse(val) >
-                                                        inStock) {
-                                                      setState(() {
-                                                        error =
-                                                            'Only $inStock items are in-Stock. Please change the number.';
-                                                      });
-                                                    } else {
-                                                      setState(() {
-                                                        error = '';
-                                                      });
-                                                    }
-                                                    setState(() {
-                                                      saleitems =
-                                                          int.parse(val.trim());
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: size.width * 0.17,
-                                                child: TextFormField(
-                                                  controller: pricePerUnit,
-                                                  inputFormatters: [
-                                                    FilteringTextInputFormatter
-                                                        .digitsOnly
-                                                  ],
-                                                  decoration: InputDecoration(
-                                                    label: Text(
-                                                      'Price per peice',
-                                                      style: TextStyle(
-                                                          color: black),
-                                                    ),
-                                                  ),
-                                                  onChanged: (val) {
-                                                    setState(() {
-                                                      newp =
-                                                          int.parse(val.trim());
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          SizedBox(
-                                            width: size.width * 0.8,
-                                            child: Text(
-                                                'Total Price: Rs. ${newp * saleitems}',
-                                                style: TextStyle(
-                                                    fontSize: fsize20),
-                                                textAlign: TextAlign.end),
-                                          ),
-                                          SizedBox(
-                                            width: size.width * 0.8,
-                                            child: Text(error,
-                                                style: const TextStyle(
-                                                    color: Colors.red,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                                textAlign: TextAlign.center),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          SizedBox(
-                                            width: size.width * 0.8,
-                                            height: size.height * 0.05,
-                                            child: ElevatedButton(
-                                              onPressed: () async {
-                                                if (newp != 0 &&
-                                                    saleitems != 0 &&
-                                                    cname != '' &&
-                                                    int.parse(
-                                                            totalItems.text) <=
-                                                        inStock) {
-                                                  setState(() {
-                                                    serial = serial + 1;
-                                                  });
-                                                  CartList clist = CartList(
-                                                      uid: selectedItems[0].uid,
-                                                      date: DateTime.now()
-                                                          .toString(),
-                                                      cname: cname.trim(),
-                                                      nameofItem:
-                                                          selectedItems[0].name,
-                                                      pp: selectedItems[0].pp,
-                                                      totalP: newp * saleitems,
-                                                      items: selectedItems[0]
-                                                          .items,
-                                                      newPrice: newp,
-                                                      saleItems: saleitems,
-                                                      payType: '',
-                                                      cpay: 0,
-                                                      cr: 0,
-                                                      bpay: 0,
-                                                      id: selectedItems[0].id);
-
-                                                  cartItems.add(clist);
-                                                  selectedItems.clear();
-
-                                                  setState(() {
-                                                    error = '';
-                                                    pricePerUnit.clear();
-                                                    totalItems.clear();
-                                                    inText.clear();
-                                                    showCart = true;
-                                                  });
-                                                  getTotalQty();
-                                                  getTotalPrice();
-                                                  pricePerUnit.clear();
-                                                  totalItems.clear();
-                                                } else {
-                                                  setState(() {
-                                                    error =
-                                                        'Please fill all details carefully!';
-                                                  });
-                                                }
-                                              },
-                                              child: const Text("Enter"),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
+                      SizedBox(
+                          width: size.width * 0.17,
+                          height: size.height * 0.08,
+                          child: TextFormField(
+                              controller: cn,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  'Customer Name',
+                                  style: TextStyle(color: black),
+                                ),
+                                suffixIcon: PopupMenuButton<dynamic>(
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  onSelected: (value) {
+                                    cn.text = value.toString().split(',').first;
+                                    custname =
+                                        value.toString().split(',').first;
+                                    custCR = value.toString().split('|').last;
+                                    custID = value
+                                        .toString()
+                                        .split(',')
+                                        .last
+                                        .toString()
+                                        .split('|')
+                                        .first;
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return getMenuItems()
+                                        .map<PopupMenuItem<dynamic>>((value) {
+                                      return PopupMenuItem(
+                                          value: value,
+                                          child: Text(value
+                                              .toString()
+                                              .split(',')
+                                              .first));
+                                    }).toList();
+                                  },
                                 ),
                               ),
-                  ],
+                              onChanged: (val) {
+                                setState(() {
+                                  custname = val;
+                                });
+                              })),
+                      SizedBox(
+                        width: size.width * 0.6,
+                        height: size.height * 0.07,
+                        child: Row(
+                          children: [
+                            DropdownButton<String>(
+                              value: search,
+                              icon:
+                                  const Icon(Icons.keyboard_arrow_down_rounded),
+                              elevation: 16,
+                              style: TextStyle(color: black),
+                              underline: Container(
+                                height: 2,
+                                color: black,
+                              ),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  pricePerUnit.clear();
+                                  totalItems.clear();
+                                  inText.clear();
+
+                                  search = newValue!;
+                                });
+                              },
+                              items: <String>[
+                                'Choose search by',
+                                'ID of items',
+                                'Name of Item'
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            SizedBox(
+                              width: size.width * 0.05,
+                            ),
+                            search == 'Choose search by'
+                                ? Container()
+                                : search == 'ID of items'
+                                    ? SizedBox(
+                                        width: size.width * 0.17,
+                                        child: TextFormField(
+                                          controller: inText,
+                                          decoration: InputDecoration(
+                                            label: Text(
+                                              'Search by ID',
+                                              style: TextStyle(color: black),
+                                            ),
+                                          ),
+                                          onChanged: (val) {
+                                            typeText.clear();
+
+                                            setState(() {
+                                              cname = val;
+                                              select = false;
+
+                                              for (var i = 0;
+                                                  i < itemsList1.length;
+                                                  i++) {
+                                                if (itemsList1[i]
+                                                    .uid
+                                                    .toLowerCase()
+                                                    .contains(
+                                                        val.toLowerCase())) {
+                                                  InStockData list =
+                                                      InStockData(
+                                                          uid:
+                                                              itemsList1[i].uid,
+                                                          date: itemsList1[i]
+                                                              .date,
+                                                          name: itemsList1[i]
+                                                              .name,
+                                                          total: itemsList1[i]
+                                                              .total,
+                                                          pp: itemsList1[i].pp,
+                                                          items: itemsList1[i]
+                                                              .items,
+                                                          index: itemsList1[i]
+                                                              .index,
+                                                          id: itemsList1[i].id);
+
+                                                  typeText.add(list);
+                                                  typeText.sort((a, b) {
+                                                    return a.name
+                                                        .toString()
+                                                        .toLowerCase()
+                                                        .compareTo(b.name
+                                                            .toString()
+                                                            .toLowerCase());
+                                                  });
+                                                }
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      )
+                                    : SizedBox(
+                                        width: size.width * 0.17,
+                                        child: TextFormField(
+                                          controller: inText,
+                                          decoration: InputDecoration(
+                                            label: Text(
+                                              'Search by Name',
+                                              style: TextStyle(color: black),
+                                            ),
+                                          ),
+                                          onChanged: (val) {
+                                            // typeText.clear();
+
+                                            setState(() {
+                                              typeText.clear();
+                                              cname = val;
+                                              select = false;
+                                              for (var i = 0;
+                                                  i < itemsList1.length;
+                                                  i++) {
+                                                if (itemsList1[i]
+                                                    .name
+                                                    .toLowerCase()
+                                                    .contains(
+                                                        val.toLowerCase())) {
+                                                  InStockData list =
+                                                      InStockData(
+                                                          uid:
+                                                              itemsList1[i].uid,
+                                                          date: itemsList1[i]
+                                                              .date,
+                                                          name: itemsList1[i]
+                                                              .name,
+                                                          total: itemsList1[i]
+                                                              .total,
+                                                          pp: itemsList1[i].pp,
+                                                          items: itemsList1[i]
+                                                              .items,
+                                                          index: itemsList1[i]
+                                                              .index,
+                                                          id: itemsList1[i].id);
+
+                                                  typeText.add(list);
+
+                                                  typeText.sort((a, b) {
+                                                    return a.name
+                                                        .toString()
+                                                        .toLowerCase()
+                                                        .compareTo(b.name
+                                                            .toString()
+                                                            .toLowerCase());
+                                                  });
+                                                }
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ),
+                          ],
+                        ),
+                      ),
+                      inText.text.isEmpty
+                          ? SizedBox(
+                              height: size.height * 0.6,
+                            )
+                          : !select
+                              ? SizedBox(
+                                  height: size.height * 0.6,
+                                  child: ListView.builder(
+                                      itemCount: typeText.length,
+                                      itemBuilder:
+                                          (BuildContext context, int i) {
+                                        return InkWell(
+                                          onTap: () {
+                                            InStockData list = InStockData(
+                                                uid: typeText[i].uid,
+                                                date: typeText[i].date,
+                                                name: typeText[i].name,
+                                                total: typeText[i].total,
+                                                pp: typeText[i].pp,
+                                                items: typeText[i].items,
+                                                index: typeText[i].index,
+                                                id: typeText[i].id);
+
+                                            selectedItems.add(list);
+
+                                            setState(() {
+                                              select = true;
+                                              name = typeText[i].name;
+                                              inStock = typeText[i].items;
+                                            });
+                                          },
+                                          child: Column(
+                                            children: [
+                                              ListTile(
+                                                  leading:
+                                                      Text(typeText[i].uid),
+                                                  trailing: Text(
+                                                    '${typeText[i].items} items In Stock',
+                                                    style: TextStyle(
+                                                        color: black,
+                                                        fontSize: 15),
+                                                  ),
+                                                  title:
+                                                      Text(typeText[i].name)),
+                                              const Divider(),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                )
+                              : SizedBox(
+                                  height: size.height * 0.53,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: size.width * 0.01,
+                                        vertical: size.height * 0.03),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              height: size.height * 0.04,
+                                              child: RichText(
+                                                text: TextSpan(
+                                                  text: '',
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                  children: <TextSpan>[
+                                                    const TextSpan(
+                                                        text: 'Name of Item:  ',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                    TextSpan(text: '   $name'),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                SizedBox(
+                                                  width: size.width * 0.25,
+                                                  child: TextFormField(
+                                                    controller: totalItems,
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly
+                                                    ],
+                                                    decoration: InputDecoration(
+                                                      label: Text(
+                                                        'No. of Items',
+                                                        style: TextStyle(
+                                                            color: black),
+                                                      ),
+                                                    ),
+                                                    onChanged: (val) {
+                                                      if (int.parse(val) >
+                                                          inStock) {
+                                                        setState(() {
+                                                          error =
+                                                              'Only $inStock items are in-Stock. Please change the number.';
+                                                        });
+                                                      } else {
+                                                        setState(() {
+                                                          error = '';
+                                                        });
+                                                      }
+                                                      setState(() {
+                                                        saleitems = int.parse(
+                                                            val.trim());
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: size.width * 0.17,
+                                                  child: TextFormField(
+                                                    controller: pricePerUnit,
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly
+                                                    ],
+                                                    decoration: InputDecoration(
+                                                      label: Text(
+                                                        'Price per peice',
+                                                        style: TextStyle(
+                                                            color: black),
+                                                      ),
+                                                    ),
+                                                    onChanged: (val) {
+                                                      setState(() {
+                                                        newp = int.parse(
+                                                            val.trim());
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            SizedBox(
+                                              width: size.width * 0.8,
+                                              child: Text(
+                                                  'Total Price: Rs. ${newp * saleitems}',
+                                                  style: TextStyle(
+                                                      fontSize: fsize20),
+                                                  textAlign: TextAlign.end),
+                                            ),
+                                            SizedBox(
+                                              width: size.width * 0.8,
+                                              child: Text(error,
+                                                  style: const TextStyle(
+                                                      color: Colors.red,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                  textAlign: TextAlign.center),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            SizedBox(
+                                              width: size.width * 0.8,
+                                              height: size.height * 0.05,
+                                              child: ElevatedButton(
+                                                onPressed: () async {
+                                                  if (newp != 0 &&
+                                                      saleitems != 0 &&
+                                                      cname != '' &&
+                                                      int.parse(totalItems
+                                                              .text) <=
+                                                          inStock) {
+                                                    setState(() {
+                                                      serial = serial + 1;
+                                                    });
+                                                    CartList clist = CartList(
+                                                        uid: selectedItems[0]
+                                                            .uid,
+                                                        date: DateTime.now()
+                                                            .toString(),
+                                                        cname: cname.trim(),
+                                                        nameofItem:
+                                                            selectedItems[0]
+                                                                .name,
+                                                        pp: selectedItems[0].pp,
+                                                        totalP:
+                                                            newp * saleitems,
+                                                        items: selectedItems[0]
+                                                            .items,
+                                                        newPrice: newp,
+                                                        saleItems: saleitems,
+                                                        payType: '',
+                                                        cpay: 0,
+                                                        cr: 0,
+                                                        bpay: 0,
+                                                        id: selectedItems[0]
+                                                            .id);
+
+                                                    cartItems.add(clist);
+                                                    selectedItems.clear();
+
+                                                    setState(() {
+                                                      error = '';
+                                                      pricePerUnit.clear();
+                                                      totalItems.clear();
+                                                      inText.clear();
+                                                      showCart = true;
+                                                    });
+                                                    getTotalQty();
+                                                    getTotalPrice();
+                                                    pricePerUnit.clear();
+                                                    totalItems.clear();
+                                                  } else {
+                                                    setState(() {
+                                                      error =
+                                                          'Please fill all details carefully!';
+                                                    });
+                                                  }
+                                                },
+                                                child: const Text("Enter"),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -674,7 +739,7 @@ class _NewSaleState extends State<NewSale> {
                                 style: TextStyle(fontSize: 18),
                               ),
                               Text(
-                                DateFormat.yMMMEd().format(DateTime.now()),
+                                date,
                               ),
                             ],
                           ),
@@ -689,43 +754,38 @@ class _NewSaleState extends State<NewSale> {
                                       DataColumn(
                                           label: Flexible(
                                               fit: FlexFit.loose,
-                                              child: Text(
-                                                'S#',
-                                                softWrap: false,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))),
+                                              child: Text('S#',
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))),
                                       DataColumn(
                                           label: Flexible(
                                               fit: FlexFit.loose,
-                                              child: Text(
-                                                'Item',
-                                                softWrap: false,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))),
+                                              child: Text('Item',
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))),
                                       DataColumn(
                                           label: Flexible(
                                               fit: FlexFit.loose,
-                                              child: Text(
-                                                'Qty',
-                                                softWrap: false,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))),
+                                              child: Text('Qty',
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))),
                                       DataColumn(
                                           label: Flexible(
                                               fit: FlexFit.loose,
-                                              child: Text(
-                                                'Rate',
-                                                softWrap: false,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))),
+                                              child: Text('Rate',
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))),
                                       DataColumn(
                                           label: Flexible(
                                               fit: FlexFit.loose,
-                                              child: Text(
-                                                'In Total',
-                                                softWrap: false,
-                                                overflow: TextOverflow.ellipsis,
-                                              ))),
+                                              child: Text('In Total',
+                                                  softWrap: false,
+                                                  overflow:
+                                                      TextOverflow.ellipsis))),
                                       DataColumn(label: Text(' ')),
                                     ],
                                     rows: cartItems
@@ -739,22 +799,18 @@ class _NewSaleState extends State<NewSale> {
                                                       const InputDecoration(
                                                     enabledBorder:
                                                         UnderlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors
-                                                              .transparent),
-                                                    ),
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .transparent)),
                                                     focusedBorder:
                                                         UnderlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors
-                                                              .transparent),
-                                                    ),
-                                                    border:
-                                                        UnderlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors
-                                                              .transparent),
-                                                    ),
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .transparent)),
+                                                    border: UnderlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .transparent)),
                                                   ),
                                                   initialValue:
                                                       item.saleItems.toString(),
@@ -907,7 +963,24 @@ class _NewSaleState extends State<NewSale> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const SizedBox(width: 2),
+                                Row(
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        text: '',
+                                        style:
+                                            DefaultTextStyle.of(context).style,
+                                        children: <TextSpan>[
+                                          const TextSpan(
+                                              text: 'Previous Balance: ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                          TextSpan(text: ' $custCR'),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 Row(
                                   children: [
                                     RichText(
@@ -1241,6 +1314,7 @@ class _NewSaleState extends State<NewSale> {
                                     ],
                                   ),
                                 ),
+                                Text(carterror),
                               ],
                             ),
                           ),
@@ -1256,24 +1330,55 @@ class _NewSaleState extends State<NewSale> {
                                           backgroundColor: Colors.indigo[900],
                                           primary: Colors.white,
                                         ),
-                                        onPressed: () {
-                                          prints(
-                                              l,
-                                              context,
-                                              invoiceNo!,
-                                              cartItems,
-                                              pay, //cash, cr , bank
-                                              qty, //total q of items
-                                              netTotal, //total amount
-                                              discount,
-                                              cashRs,
-                                              crRs,
-                                              bankRs,
-                                              custname,
-                                              false);
+                                        onPressed: () async {
+                                          setState(() {
+                                            buttonload = true;
+                                          });
+                                          if (cn.text.isNotEmpty &&
+                                              cartItems.isNotEmpty) {
+                                            prints(
+                                                date,
+                                                l,
+                                                context,
+                                                invoiceNo! + 1,
+                                                cartItems,
+                                                pay, //cash, cr , bank
+                                                qty, //total q of items
+                                                netTotal, //total amount
+                                                discount,
+                                                cashRs,
+                                                crRs,
+                                                bankRs,
+                                                custname,
+                                                custID,
+                                                int.parse(custCR),
+                                                false);
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            prefs.setInt(
+                                                "invoice", invoiceNo! + 1);
+
+                                            setState(() {
+                                              invoiceNo =
+                                                  prefs.getInt('invoice');
+                                            });
+                                          } else {
+                                            setState(() {
+                                              buttonload = false;
+                                              carterror =
+                                                  'Customer Name Please';
+                                            });
+                                          }
                                         },
-                                        icon: const Icon(Icons.save_rounded),
-                                        label: const Text('Save')),
+                                        icon: buttonload
+                                            ? SpinKitWave(
+                                                size: size.height * 0.02,
+                                                color: white)
+                                            : const Icon(Icons.save_rounded),
+                                        label: buttonload
+                                            ? Container()
+                                            : const Text('Save')),
                                     const SizedBox(
                                       width: 10,
                                     ),
@@ -1283,24 +1388,55 @@ class _NewSaleState extends State<NewSale> {
                                               Colors.lightGreen[900],
                                           primary: Colors.white,
                                         ),
-                                        onPressed: () {
-                                          prints(
-                                              l,
-                                              context,
-                                              invoiceNo!,
-                                              cartItems,
-                                              pay, //cash, cr , bank
-                                              qty, //total q of items
-                                              netTotal, //total amount
-                                              discount,
-                                              cashRs,
-                                              crRs,
-                                              bankRs,
-                                              custname,
-                                              true);
+                                        onPressed: () async {
+                                          setState(() {
+                                            buttonload = true;
+                                          });
+                                          if (cn.text.isNotEmpty &&
+                                              cartItems.isNotEmpty) {
+                                            prints(
+                                                date,
+                                                l,
+                                                context,
+                                                invoiceNo! + 1,
+                                                cartItems,
+                                                pay, //cash, cr , bank
+                                                qty, //total q of items
+                                                netTotal, //total amount
+                                                discount,
+                                                cashRs,
+                                                crRs,
+                                                bankRs,
+                                                custname,
+                                                custID,
+                                                int.parse(custCR),
+                                                true);
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            prefs.setInt(
+                                                "invoice", invoiceNo! + 1);
+
+                                            setState(() {
+                                              invoiceNo =
+                                                  prefs.getInt('invoice');
+                                            });
+                                          } else {
+                                            setState(() {
+                                              buttonload = false;
+                                              carterror =
+                                                  'Customer Name Please';
+                                            });
+                                          }
                                         },
-                                        icon: const Icon(Icons.print_rounded),
-                                        label: const Text('Save & Print')),
+                                        icon: buttonload
+                                            ? SpinKitWave(
+                                                size: size.height * 0.02,
+                                                color: white)
+                                            : const Icon(Icons.print_rounded),
+                                        label: buttonload
+                                            ? Container()
+                                            : const Text('Save & Print')),
                                   ],
                                 ),
                               ],
@@ -1322,6 +1458,7 @@ class _NewSaleState extends State<NewSale> {
 }
 
 Future<void> prints(
+  String date,
   Printer? printer,
   BuildContext context,
   int invoice,
@@ -1334,6 +1471,8 @@ Future<void> prints(
   int cr,
   int bank,
   String cname,
+  String custId,
+  int custCR,
   bool print,
 ) async {
   String? docId;
@@ -1341,32 +1480,28 @@ Future<void> prints(
   int totalProfit = 0;
   //save to DataBase
 
-  CollectionReference invo = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('invoices');
-
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
-
-  await invo.add({
+  await invoiceRef.add({
     'inovno': invoice,
     'customer': cname,
-    'date': DateFormat.yMd().format(DateTime.now()),
-    'netTotal': netTotal,
+    'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    'netTotal': netTotal-discount,
     'totalItems': qty,
     'payType': pay,
     'cashRs': cash,
     'crRs': cr,
     'bankRs': bank,
     'profit': 0
-  }).then((value) {
+  }).then((value) async {
     docId = value.id;
 
+    if (custId == '') {
+      customerRef.add({'customer': cname, 'cr': custCR + cr});
+    } else {
+      customerRef.document(custId).update({'cr': custCR + cr});
+    }
+
     for (var i = 0; i < cart.length; i++) {
-      invo.document(docId!).collection('items').add({
+      invoiceRef.document(docId!).collection('items').add({
         'iNo': cart[i].uid,
         'iName': cart[i].nameofItem,
         'inewP': cart[i].newPrice,
@@ -1385,11 +1520,11 @@ Future<void> prints(
       totalProfit =
           cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
     }
-    invo.document(docId!).update({'profit': totalProfit});
+    invoiceRef.document(docId!).update({'profit': totalProfit});
     pos.document('Bank Rs').set({'bank': (bankRs + bank)});
     pos.document('Cash Rs').set({'cash': (cashRs + cash)});
     pos.document('CR Rs').set({'cr': (crRs + cr)});
-    pos.document('Total Sales').set({'Total': (totalRs + netTotal)});
+    pos.document('Total Sales').set({'Total': ((totalRs + netTotal)-discount)});
     pos.document('Profit').set({'Profit': (profit + totalProfit)});
 
     index = 0;
@@ -1442,9 +1577,8 @@ Future<void> prints(
   );
 
   if (print) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt("invoiceNo", invoice);
     printReceipt(
+        date,
         doc,
         pageFormat,
         image,
@@ -1459,6 +1593,7 @@ Future<void> prints(
         discount,
         pay,
         cname,
+        custCR,
         bold9,
         cart,
         textStyle9,
@@ -1482,6 +1617,7 @@ Future<void> prints(
 }
 
 void printReceipt(
+    String date,
     pw.Document doc,
     PdfPageFormat pageFormat,
     pw.ImageProvider image,
@@ -1496,6 +1632,7 @@ void printReceipt(
     int discount,
     String pay,
     String cname,
+    int custCR,
     pw.TextStyle bold9,
     List<CartList> cart,
     pw.TextStyle textStyle9,
@@ -1544,8 +1681,7 @@ void printReceipt(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
                           pw.Text('Date:  ', style: bold10),
-                          pw.Text(DateFormat('d/MMM/y').format(DateTime.now()),
-                              style: textStyle10),
+                          pw.Text(date, style: textStyle10),
                         ]),
                   ]),
               pw.Row(
@@ -1664,7 +1800,7 @@ void printReceipt(
                     children: [
                       pw.Text('Perivous Balance:      ',
                           textAlign: pw.TextAlign.right, style: bold9),
-                      pw.Text(myFormat.format(0),
+                      pw.Text(myFormat.format(custCR),
                           textAlign: pw.TextAlign.right, style: textStyle10)
                     ],
                   ),
