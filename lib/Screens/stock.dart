@@ -263,6 +263,7 @@ class _InStockState extends State<InStock> {
                                         children: [
                                           IconButton(
                                               onPressed: () async {
+                                                itemsList1.clear();
                                                 setState(() {
                                                   load = true;
                                                 });
@@ -272,12 +273,11 @@ class _InStockState extends State<InStock> {
                                                     .then((value) {
                                                   setState(() {
                                                     load = false;
-
                                                     Navigator.pushReplacement(
                                                         context,
                                                         MaterialPageRoute(
                                                             builder: (context) =>
-                                                                const HomeScreen()));
+                                                                const HomeScreen(cname: '', cr: 0, id: '')));
                                                   });
                                                 });
                                               },

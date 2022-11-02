@@ -231,7 +231,7 @@ class _AddStockState extends State<AddStock> {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const HomeScreen()));
+                                      builder: (context) => const HomeScreen(cname: '', cr: 0, id: '')));
                             });
                           });
                           setState(() {

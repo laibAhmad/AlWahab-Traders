@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_system/Screens/add_stock.dart';
+import 'package:inventory_system/Screens/customer_details.dart';
 
 import 'package:inventory_system/Screens/return.dart';
 import 'package:inventory_system/Screens/stock.dart';
@@ -7,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Models/data.dart';
 import 'Screens/alert.dart';
+import 'Screens/customer.dart';
 import 'Screens/dashboard.dart';
 import 'Screens/expenses.dart';
 import 'Screens/invoice.dart';
@@ -15,7 +17,10 @@ import 'constants.dart';
 import 'login.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final String cname,id;
+  final int cr;
+  
+  const HomeScreen({Key? key, required this.cname, required this.id, required this.cr}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -83,6 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
       const InStock(),
       const Return(),
       const ExpensesScreen(),
+      const CustomerScreen(),
+      CustomerDetails(cname: widget.cname, cr: widget.cr, id: widget.id),
       const Icon(Icons.visibility),
       const AlertStock(),
       const Icon(Icons.home),
@@ -109,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
               onPressed: () async {
                 setState(() {
-                  index = 8;
+                  index = 10;
                 });
               },
               icon: Icon(Icons.add_alert, color: red)),

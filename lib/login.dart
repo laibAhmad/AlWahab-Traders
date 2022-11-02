@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       context,
                                                       MaterialPageRoute(
                                                           builder: (context) =>
-                                                              const HomeScreen()));
+                                                              const HomeScreen(cname: '', cr: 0, id: '')));
                                                 } else {
                                                   setState(() {
                                                     error = 'Not an admin';

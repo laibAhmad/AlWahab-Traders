@@ -238,7 +238,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             },
                             items: <String>[
                               'Cash',
-                              'Bank',
                             ].map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
@@ -267,15 +266,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 'spent': spend,
                                 'spentFrom': search,
                               }).then((value) {
-                                if (search == 'Cash') {
-                                  pos
+                                pos
                                       .document('Cash Rs')
                                       .set({'cash': (cashRs - spend)});
-                                } else {
-                                  pos
-                                      .document('Bank Rs')
-                                      .set({'bank': (bankRs - spend)});
-                                }
+                                
                                 setState(() {
                                   load = false;
                                   index = 6;
@@ -283,7 +277,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) =>
-                                              const HomeScreen()));
+                                              const HomeScreen(cname: '', cr: 0, id: '')));
                                 });
                               });
                               setState(() {

@@ -60,6 +60,8 @@ class _NewSaleState extends State<NewSale> {
   String custID = '';
   String custCR = '0';
 
+  String pervCR = '0';
+
   String cname = '';
   int selectedIndex = -1;
 
@@ -119,7 +121,7 @@ class _NewSaleState extends State<NewSale> {
 
     await Printing.listPrinters().asStream().forEach((element) {
       for (var e in element) {
-        if (e.model!.contains('SGT-88IVENG')) {
+        if (e.name.contains('SGT-88IV Printer(2)')) {
           l = e;
         }
       }
@@ -254,8 +256,7 @@ class _NewSaleState extends State<NewSale> {
                                           .format(pickedDate);
 
                                   setState(() {
-                                    date =
-                                        formattedDate; //set output date to TextField value.
+                                    date = formattedDate;
                                   });
                                 } else {}
                               },
@@ -284,6 +285,7 @@ class _NewSaleState extends State<NewSale> {
                                     custname =
                                         value.toString().split(',').first;
                                     custCR = value.toString().split('|').last;
+                                    pervCR = value.toString().split('|').last;
                                     custID = value
                                         .toString()
                                         .split(',')
@@ -975,7 +977,7 @@ class _NewSaleState extends State<NewSale> {
                                               text: 'Previous Balance: ',
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold)),
-                                          TextSpan(text: ' $custCR'),
+                                          TextSpan(text: ' $pervCR'),
                                         ],
                                       ),
                                     ),
@@ -994,7 +996,8 @@ class _NewSaleState extends State<NewSale> {
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold)),
                                           TextSpan(
-                                              text: ' ${netTotal - discount}'),
+                                              text:
+                                                  ' ${netTotal - discount + int.parse(pervCR)}'),
                                         ],
                                       ),
                                     ),
@@ -1032,13 +1035,17 @@ class _NewSaleState extends State<NewSale> {
                                           cr.clear();
                                           crRs = 0;
                                         });
+                                        if (pay == 'CR') {
+                                          setState(() {
+                                            crRs = netTotal -
+                                                discount +
+                                                int.parse(pervCR);
+                                          });
+                                        }
                                       },
                                       items: <String>[
                                         'Cash',
-                                        'Bank',
                                         'CR',
-                                        'Cash + Bank',
-                                        'CR + Bank',
                                         'Cash + CR',
                                       ].map<DropdownMenuItem<String>>(
                                           (String value) {
@@ -1052,93 +1059,6 @@ class _NewSaleState extends State<NewSale> {
                                 ),
                                 Visibility(
                                   visible: pay == 'Cash' ? true : false,
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Cash: ',
-                                        style: TextStyle(fontWeight: bold),
-                                      ),
-                                      SizedBox(
-                                        width: size.width * 0.05,
-                                        height: 40,
-                                        child: TextFormField(
-                                          controller: cash,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
-                                          onChanged: (val) {
-                                            setState(() {
-                                              cashRs = int.parse(val);
-                                              crRs = crRs;
-                                              bankRs = bankRs;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: pay == 'Bank' ? true : false,
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'In Bank: ',
-                                        style: TextStyle(fontWeight: bold),
-                                      ),
-                                      SizedBox(
-                                        width: size.width * 0.05,
-                                        height: 40,
-                                        child: TextFormField(
-                                          controller: bank,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
-                                          onChanged: (val) {
-                                            setState(() {
-                                              bankRs = int.parse(val);
-                                              crRs = crRs;
-                                              cashRs = cashRs;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: pay == 'CR' ? true : false,
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'CR: ',
-                                        style: TextStyle(fontWeight: bold),
-                                      ),
-                                      SizedBox(
-                                        width: size.width * 0.05,
-                                        height: 40,
-                                        child: TextFormField(
-                                          controller: cr,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ],
-                                          onChanged: (val) {
-                                            setState(() {
-                                              crRs = int.parse(val);
-                                              cashRs = cashRs;
-                                              bankRs = bankRs;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: pay == 'Cash + Bank' ? true : false,
                                   child: Column(
                                     children: [
                                       Row(
@@ -1159,7 +1079,10 @@ class _NewSaleState extends State<NewSale> {
                                               onChanged: (val) {
                                                 setState(() {
                                                   cashRs = int.parse(val);
-                                                  crRs = crRs;
+                                                  crRs = (netTotal -
+                                                          discount +
+                                                          int.parse(pervCR)) -
+                                                      int.parse(val);
                                                   bankRs = bankRs;
                                                 });
                                               },
@@ -1167,39 +1090,6 @@ class _NewSaleState extends State<NewSale> {
                                           ),
                                         ],
                                       ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'In Bank: ',
-                                            style: TextStyle(fontWeight: bold),
-                                          ),
-                                          SizedBox(
-                                            width: size.width * 0.05,
-                                            height: 40,
-                                            child: TextFormField(
-                                              controller: bank,
-                                              inputFormatters: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  bankRs = int.parse(val);
-                                                  crRs = crRs;
-                                                  cashRs = cashRs;
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: pay == 'CR + Bank' ? true : false,
-                                  child: Column(
-                                    children: [
                                       Row(
                                         children: [
                                           Text(
@@ -1209,49 +1099,44 @@ class _NewSaleState extends State<NewSale> {
                                           SizedBox(
                                             width: size.width * 0.05,
                                             height: 40,
-                                            child: TextFormField(
-                                              controller: cr,
-                                              inputFormatters: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  crRs = int.parse(val);
-                                                  cashRs = cashRs;
-                                                  bankRs = bankRs;
-                                                });
-                                              },
-                                            ),
+                                            child: Center(child: Text('$crRs')),
                                           ),
                                         ],
                                       ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'In Bank: ',
-                                            style: TextStyle(fontWeight: bold),
-                                          ),
-                                          SizedBox(
-                                            width: size.width * 0.05,
-                                            height: 40,
-                                            child: TextFormField(
-                                              controller: bank,
-                                              inputFormatters: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  bankRs = int.parse(val);
-                                                  crRs = crRs;
-                                                  cashRs = cashRs;
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ],
+                                    ],
+                                  ),
+                                ),
+                                Visibility(
+                                  visible: pay == 'CR' ? true : false,
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'CR: ',
+                                        style: TextStyle(fontWeight: bold),
                                       ),
+                                      SizedBox(
+                                          width: size.width * 0.05,
+                                          height: 40,
+                                          child: Center(
+                                              child: Text(
+                                                  '${(netTotal - discount + int.parse(pervCR))}'))
+                                          // TextFormField(
+                                          //   initialValue:
+                                          //       '${}',
+                                          //   inputFormatters: [
+                                          //     FilteringTextInputFormatter
+                                          //         .digitsOnly
+                                          //   ],
+
+                                          //   onChanged: (val) {
+                                          //     setState(() {
+                                          //       crRs = int.parse(val);
+                                          //       cashRs = cashRs;
+                                          //       bankRs = bankRs;
+                                          //     });
+                                          //   },
+                                          // ),
+                                          ),
                                     ],
                                   ),
                                 ),
@@ -1277,7 +1162,10 @@ class _NewSaleState extends State<NewSale> {
                                               onChanged: (val) {
                                                 setState(() {
                                                   cashRs = int.parse(val);
-                                                  crRs = crRs;
+                                                  crRs = (netTotal -
+                                                          discount +
+                                                          int.parse(pervCR)) -
+                                                      int.parse(val);
                                                   bankRs = bankRs;
                                                 });
                                               },
@@ -1294,20 +1182,22 @@ class _NewSaleState extends State<NewSale> {
                                           SizedBox(
                                             width: size.width * 0.05,
                                             height: 40,
-                                            child: TextFormField(
-                                              controller: cr,
-                                              inputFormatters: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly
-                                              ],
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  crRs = int.parse(val);
-                                                  cashRs = cashRs;
-                                                  bankRs = bankRs;
-                                                });
-                                              },
-                                            ),
+                                            child: crRs != 0
+                                                ? Center(child: Text('$crRs'))
+                                                : TextFormField(
+                                                    controller: cr,
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly
+                                                    ],
+                                                    onChanged: (val) {
+                                                      setState(() {
+                                                        crRs = int.parse(val);
+                                                        cashRs = cashRs;
+                                                        bankRs = bankRs;
+                                                      });
+                                                    },
+                                                  ),
                                           ),
                                         ],
                                       ),
@@ -1336,33 +1226,73 @@ class _NewSaleState extends State<NewSale> {
                                           });
                                           if (cn.text.isNotEmpty &&
                                               cartItems.isNotEmpty) {
-                                            prints(
-                                                date,
-                                                l,
-                                                context,
-                                                invoiceNo! + 1,
-                                                cartItems,
-                                                pay, //cash, cr , bank
-                                                qty, //total q of items
-                                                netTotal, //total amount
-                                                discount,
-                                                cashRs,
-                                                crRs,
-                                                bankRs,
-                                                custname,
-                                                custID,
-                                                int.parse(custCR),
-                                                false);
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-                                            prefs.setInt(
-                                                "invoice", invoiceNo! + 1);
+                                            if (netTotal - discount <=
+                                                netTotal -
+                                                    discount +
+                                                    int.parse(pervCR)) {
+                                              if (crRs == 0) {
+                                                prints(
+                                                    date,
+                                                    l,
+                                                    context,
+                                                    invoiceNo! + 1,
+                                                    cartItems,
+                                                    pay, //cash, cr , bank
+                                                    qty, //total q of items
+                                                    netTotal, //total amount
+                                                    discount,
+                                                    cashRs,
+                                                    crRs,
+                                                    bankRs,
+                                                    custname,
+                                                    custID,
+                                                    0,
+                                                    int.parse(pervCR),
+                                                    false);
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                prefs.setInt(
+                                                    "invoice", invoiceNo! + 1);
 
-                                            setState(() {
-                                              invoiceNo =
-                                                  prefs.getInt('invoice');
-                                            });
+                                                setState(() {
+                                                  invoiceNo =
+                                                      prefs.getInt('invoice');
+                                                });
+                                              } else {
+                                                prints(
+                                                    date,
+                                                    l,
+                                                    context,
+                                                    invoiceNo! + 1,
+                                                    cartItems,
+                                                    pay, //cash, cr , bank
+                                                    qty, //total q of items
+                                                    netTotal, //total amount
+                                                    discount,
+                                                    cashRs,
+                                                    crRs,
+                                                    bankRs,
+                                                    custname,
+                                                    custID,
+                                                    (netTotal -
+                                                            discount +
+                                                            int.parse(pervCR)) -
+                                                        cashRs,
+                                                    int.parse(pervCR),
+                                                    false);
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                prefs.setInt(
+                                                    "invoice", invoiceNo! + 1);
+
+                                                setState(() {
+                                                  invoiceNo =
+                                                      prefs.getInt('invoice');
+                                                });
+                                              }
+                                            }
                                           } else {
                                             setState(() {
                                               buttonload = false;
@@ -1394,33 +1324,118 @@ class _NewSaleState extends State<NewSale> {
                                           });
                                           if (cn.text.isNotEmpty &&
                                               cartItems.isNotEmpty) {
-                                            prints(
-                                                date,
-                                                l,
-                                                context,
-                                                invoiceNo! + 1,
-                                                cartItems,
-                                                pay, //cash, cr , bank
-                                                qty, //total q of items
-                                                netTotal, //total amount
-                                                discount,
-                                                cashRs,
-                                                crRs,
-                                                bankRs,
-                                                custname,
-                                                custID,
-                                                int.parse(custCR),
-                                                true);
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-                                            prefs.setInt(
-                                                "invoice", invoiceNo! + 1);
+                                            if (netTotal - discount <=
+                                                netTotal -
+                                                    discount +
+                                                    int.parse(pervCR)) {
+                                              if (crRs == 0) {
+                                                prints(
+                                                    date,
+                                                    l,
+                                                    context,
+                                                    invoiceNo! + 1,
+                                                    cartItems,
+                                                    pay, //cash, cr , bank
+                                                    qty, //total q of items
+                                                    netTotal, //total amount
+                                                    discount,
+                                                    cashRs,
+                                                    crRs,
+                                                    bankRs,
+                                                    custname,
+                                                    custID,
+                                                    0,
+                                                    int.parse(pervCR),
+                                                    true);
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                prefs.setInt(
+                                                    "invoice", invoiceNo! + 1);
 
-                                            setState(() {
-                                              invoiceNo =
-                                                  prefs.getInt('invoice');
-                                            });
+                                                setState(() {
+                                                  invoiceNo =
+                                                      prefs.getInt('invoice');
+                                                });
+                                              } else {
+                                                prints(
+                                                    date,
+                                                    l,
+                                                    context,
+                                                    invoiceNo! + 1,
+                                                    cartItems,
+                                                    pay, //cash, cr , bank
+                                                    qty, //total q of items
+                                                    netTotal, //total amount
+                                                    discount,
+                                                    cashRs,
+                                                    crRs,
+                                                    bankRs,
+                                                    custname,
+                                                    custID,
+                                                    (netTotal -
+                                                            discount +
+                                                            int.parse(pervCR)) -
+                                                        cashRs,
+                                                    int.parse(pervCR),
+                                                    true);
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                prefs.setInt(
+                                                    "invoice", invoiceNo! + 1);
+
+                                                setState(() {
+                                                  invoiceNo =
+                                                      prefs.getInt('invoice');
+                                                });
+                                              }
+                                            }
+
+                                            // if(netTotal-discount < netTotal-discount+int.parse(custCR)){
+                                            //   if(crRs==0){
+                                            //     setState(() {
+                                            //       custCR='0';
+                                            //     });
+                                            //     print(custCR);
+                                            //   }else{
+                                            //     setState(() {
+                                            //       custCR='${(netTotal-discount+int.parse(custCR))-cashRs}';
+                                            //     });
+                                            //     print(custCR);
+                                            //   }
+                                            // }
+
+                                            // if (cn.text.isNotEmpty &&
+                                            //     cartItems.isNotEmpty) {
+                                            //   prints(
+                                            //       date,
+                                            //       l,
+                                            //       context,
+                                            //       invoiceNo! + 1,
+                                            //       cartItems,
+                                            //       pay, //cash, cr , bank
+                                            //       qty, //total q of items
+                                            //       netTotal, //total amount
+                                            //       discount,
+                                            //       cashRs,
+                                            //       crRs,
+                                            //       bankRs,
+                                            //       custname,
+                                            //       custID,
+                                            //       int.parse(custCR),
+                                            //       int.parse(pervCR),
+                                            //       true);
+                                            //   SharedPreferences prefs =
+                                            //       await SharedPreferences
+                                            //           .getInstance();
+                                            //   prefs.setInt(
+                                            //       "invoice", invoiceNo! + 1);
+
+                                            //   setState(() {
+                                            //     invoiceNo =
+                                            //         prefs.getInt('invoice');
+                                            //   });
                                           } else {
                                             setState(() {
                                               buttonload = false;
@@ -1473,6 +1488,7 @@ Future<void> prints(
   String cname,
   String custId,
   int custCR,
+  int pervCR,
   bool print,
 ) async {
   String? docId;
@@ -1484,7 +1500,7 @@ Future<void> prints(
     'inovno': invoice,
     'customer': cname,
     'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-    'netTotal': netTotal-discount,
+    'netTotal': netTotal - discount,
     'totalItems': qty,
     'payType': pay,
     'cashRs': cash,
@@ -1495,9 +1511,37 @@ Future<void> prints(
     docId = value.id;
 
     if (custId == '') {
-      customerRef.add({'customer': cname, 'cr': custCR + cr});
+      customerRef.add({'customer': cname, 'cr': cr}).then((v) async {
+        if (cr != 0) {
+          customerRef.document(v.id).collection('cr').add({
+            'date': date,
+            'cr':(pervCR-cr).abs(),
+            'status': true,
+          });
+        }else if (cr == 0) {
+          customerRef.document(custId).collection('cr').add({
+            'date': date,
+            'cr': (pervCR-cr).abs(),
+            'status': false,
+          });
+        }
+      });
     } else {
-      customerRef.document(custId).update({'cr': custCR + cr});
+      customerRef.document(custId).update({'cr': cr}).then((v) async {
+        if (cr != 0) {
+          customerRef.document(custId).collection('cr').add({
+            'date': date,
+            'cr': (pervCR-cr).abs(),
+            'status': true,
+          });
+        }else if (cr == 0) {
+          customerRef.document(custId).collection('cr').add({
+            'date': date,
+            'cr': (pervCR-cr).abs(),
+            'status': false,
+          });
+        }
+      });
     }
 
     for (var i = 0; i < cart.length; i++) {
@@ -1521,15 +1565,18 @@ Future<void> prints(
           cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
     }
     invoiceRef.document(docId!).update({'profit': totalProfit});
-    pos.document('Bank Rs').set({'bank': (bankRs + bank)});
     pos.document('Cash Rs').set({'cash': (cashRs + cash)});
-    pos.document('CR Rs').set({'cr': (crRs + cr)});
-    pos.document('Total Sales').set({'Total': ((totalRs + netTotal)-discount)});
+    pos.document('CR Rs').set({'cr': (crRs + (pervCR-cr))});
+    pos
+        .document('Total Sales')
+        .set({'Total': ((totalRs + netTotal) - discount)});
     pos.document('Profit').set({'Profit': (profit + totalProfit)});
 
     index = 0;
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => const HomeScreen(cname: '', cr: 0, id: '')));
   });
 
   final image = await imageFromAssetBundle('assets/img/black.png');
@@ -1576,7 +1623,7 @@ Future<void> prints(
     color: PdfColor.fromHex("#000000"),
   );
 
-  if (print) {
+  if (print == true) {
     printReceipt(
         date,
         doc,
@@ -1594,6 +1641,9 @@ Future<void> prints(
         pay,
         cname,
         custCR,
+        pervCR,
+        // (((netTotal-discount)+custCR)-custCR)+cr,
+        cr,
         bold9,
         cart,
         textStyle9,
@@ -1633,6 +1683,8 @@ void printReceipt(
     String pay,
     String cname,
     int custCR,
+    int pervCR,
+    int currBal,
     pw.TextStyle bold9,
     List<CartList> cart,
     pw.TextStyle textStyle9,
@@ -1786,7 +1838,8 @@ void printReceipt(
                               color: PdfColor.fromHex("#000000"))),
                       child: pw.Padding(
                           padding: const pw.EdgeInsets.all(4),
-                          child: pw.Text('Net Total:  ${netTotal - discount}',
+                          child: pw.Text(
+                              'Net Total:  ${(netTotal - discount) + pervCR}',
                               textAlign: pw.TextAlign.right,
                               style: textStyle9)))),
 
@@ -1800,7 +1853,7 @@ void printReceipt(
                     children: [
                       pw.Text('Perivous Balance:      ',
                           textAlign: pw.TextAlign.right, style: bold9),
-                      pw.Text(myFormat.format(custCR),
+                      pw.Text(myFormat.format(pervCR),
                           textAlign: pw.TextAlign.right, style: textStyle10)
                     ],
                   ),
@@ -1810,17 +1863,6 @@ void printReceipt(
                             pw.Text('Cash Received:     ',
                                 textAlign: pw.TextAlign.right, style: bold9),
                             pw.Text(myFormat.format(cash),
-                                textAlign: pw.TextAlign.right,
-                                style: textStyle10)
-                          ],
-                        )
-                      : const pw.TableRow(children: []),
-                  pay.contains('Bank')
-                      ? pw.TableRow(
-                          children: [
-                            pw.Text('Amount In Bank:     ',
-                                textAlign: pw.TextAlign.right, style: bold9),
-                            pw.Text(myFormat.format(bank),
                                 textAlign: pw.TextAlign.right,
                                 style: textStyle10)
                           ],
@@ -1841,7 +1883,7 @@ void printReceipt(
                     children: [
                       pw.Text('Current Balance:     ',
                           textAlign: pw.TextAlign.right, style: bold9),
-                      pw.Text('${netTotal - discount}',
+                      pw.Text('$currBal',
                           textAlign: pw.TextAlign.right, style: textStyle10)
                     ],
                   ),

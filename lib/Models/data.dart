@@ -1,4 +1,3 @@
-
 class InStockData {
   String uid, name, date;
 
@@ -40,7 +39,7 @@ class CartList {
 }
 
 class Invoices {
-  int bank, cash, cr, netTotal, profit, invo, totalitems,index;
+  int bank, cash, cr, netTotal, profit, invo, totalitems, index;
   dynamic id;
   String date, cname, paytype;
   List<InvoiceItems> invoiceitems;
@@ -57,9 +56,7 @@ class Invoices {
       required this.totalitems,
       required this.date,
       required this.invoiceitems,
-      required this.index
-       });
-
+      required this.index});
 }
 
 class InvoiceItems {
@@ -91,5 +88,5 @@ class Customers {
   String customerName;
   int cr;
   dynamic id;
-  Customers({required this.customerName,required this.cr, required this.id});
+  Customers({required this.customerName, required this.cr, required this.id});
 }

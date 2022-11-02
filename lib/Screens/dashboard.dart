@@ -29,6 +29,8 @@ class _DashboardState extends State<Dashboard> {
   int month = 0;
   int year = 0;
 
+  int expenseRs=0;
+
   int todaySalesT = 0;
   int cashSalesT = 0;
   int crSalesT = 0;
@@ -50,7 +52,6 @@ class _DashboardState extends State<Dashboard> {
   int yearCr = 0;
 
   int cash = 0;
-  int bank = 0;
   int cr = 0;
 
   List<Invoices> invoiceList = [];
@@ -60,7 +61,7 @@ class _DashboardState extends State<Dashboard> {
     getInvoices();
     getcash();
     getCR();
-    getBank();
+    getExpnses();
 
     super.initState();
   }
@@ -107,14 +108,15 @@ class _DashboardState extends State<Dashboard> {
       cashSales = cashSalesT;
       crSales = crSalesT;
       totalPcs = totalPcsT;
-
     }
   }
 
   Future<int> getCR() async {
     await pos.document('CR Rs').get().asStream().forEach((element) {
       cr = element['cr'];
-      crRs = cr;
+      setState(() {
+        crRs = cr;
+      });
     });
     return crRs;
   }
@@ -122,17 +124,32 @@ class _DashboardState extends State<Dashboard> {
   Future<int> getcash() async {
     await pos.document('Cash Rs').get().asStream().forEach((element) {
       cash = element['cash'];
-      cashRs = cash;
+      setState(() {
+        cashRs = cash;
+      });
     });
     return cashRs;
   }
 
-  Future<int> getBank() async {
-    await pos.document('Bank Rs').get().asStream().forEach((element) {
-      bank = element['bank'];
-      bankRs = bank;
-    });
-    return bankRs;
+  Future<int> getExpnses() async{
+    await expenseRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          if ((element['date']).toString().compareTo(date)==0) {
+            Expenses list = Expenses(
+                date: element['date'],
+                expenseName: element['expense'],
+                spentRs: element['spent'],
+                spendfrom: element['spentFrom'],
+                id: element.id);
+
+            setState(() {
+              expenseRs=expenseRs+ list.spentRs;
+            });
+          }
+        }
+      });
+
+      return expenseRs;
   }
 
   @override
@@ -148,14 +165,12 @@ class _DashboardState extends State<Dashboard> {
               const Text('Sales Overview',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 10),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                 Container(
-                    width: size.width * 0.41,
+                    width: size.width * 0.412,
                     height: size.height * 0.35,
                     decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        border: Border.all(color: Colors.grey.shade100),
+                        color: Colors.blue.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(5.0)),
                     child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -163,168 +178,175 @@ class _DashboardState extends State<Dashboard> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               SizedBox(
-                                  // width: size.width * 0.2,
                                   child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                         Text('Today     $date',
-                                            style:const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15)),
-                                        Row(children: [
-                                          Container(
-                                              height: 45,
-                                              width: 45,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0)),
-                                              child: Center(
-                                                  child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: Icon(earnicon,
-                                                          color: Colors.blue
-                                                              .shade400)))),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('Total Sales',
-                                                    style: TextStyle(
+                                    SizedBox(
+                                        width: (size.width * 0.41) - 20,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text('Today',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15)),
+                                           
+                                               Text(date,
+                                                    style: const TextStyle(
                                                         fontWeight:
-                                                            FontWeight.w400)),
-                                                Text('Rs. ${myFormat.format(todaySales)}',
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            size.width * 0.016,
-                                                        fontWeight:
-                                                            FontWeight.w700))
-                                              ])
-                                        ]),
-                                        Row(children: [
-                                          Container(
-                                              height: 45,
-                                              width: 45,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0)),
-                                              child: Center(
-                                                  child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10.0),
-                                                      child: Icon(salesicon,
-                                                          color: Colors.blue
-                                                              .shade400)))),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                          Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('Cash Sales',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400)),
-                                                Text('Rs. ${myFormat.format(cashSales)}',
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            size.width * 0.016,
-                                                        fontWeight:
-                                                            FontWeight.w700))
-                                              ])
-                                        ]),
-                                        Row(children: [
-                                          Container(
-                                              height: 45,
-                                              width: 45,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0)),
-                                              child: Center(
-                                                  child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: Icon(earnicon,
-                                                          color: Colors.blue
-                                                              .shade400)))),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('CR',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400)),
-                                                Text('Rs. ${myFormat.format(crSales)}',
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            size.width * 0.016,
-                                                        fontWeight:
-                                                            FontWeight.w700))
-                                              ])
-                                        ]),
-                                        Row(children: [
-                                          Container(
-                                              height: 45,
-                                              width: 45,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.15),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          5.0)),
-                                              child: Center(
-                                                  child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: Icon(profiticon,
-                                                          color: Colors.blue
-                                                              .shade400)))),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('Total Pcs.',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400)),
-                                                Text('$totalPcs',
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            size.width * 0.016,
-                                                        fontWeight:
-                                                            FontWeight.w700))
-                                              ])
-                                        ])
-                                      ]))
+                                                            FontWeight.bold,
+                                                        fontSize: 15)),
+                                            ])),
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.blue.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(earnicon,
+                                                      color: Colors
+                                                          .blue.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Sales',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(todaySales)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.blue.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      10.0),
+                                                  child: Icon(salesicon,
+                                                      color: Colors
+                                                          .blue.shade400)))),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Cash Sales',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(cashSales)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.blue.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(earnicon,
+                                                      color: Colors
+                                                          .blue.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('CR',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(crSales)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.blue.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(profiticon,
+                                                      color: Colors
+                                                          .blue.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Pcs.',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text('$totalPcs',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ])
+                                  ]))
                             ]))),
-                const SizedBox(width: 10),
+                const SizedBox(width: 5),
                 Container(
-                    width: size.width * 0.41,
+                    width: size.width * 0.412,
                     height: size.height * 0.35,
                     decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        border: Border.all(color: Colors.grey.shade100),
+                        color: Colors.pink.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(5.0)),
                     child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -335,115 +357,224 @@ class _DashboardState extends State<Dashboard> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('POS',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15)),
-                                  Row(children: [
-                                    Container(
-                                        height: 45,
-                                        width: 45,
-                                        decoration: BoxDecoration(
-                                            color: Colors.pinkAccent
-                                                .withOpacity(0.15),
-                                            borderRadius:
-                                                BorderRadius.circular(5.0)),
-                                        child: Center(
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                child: Icon(
-                                                  Icons.attach_money,
-                                                  color: Colors
-                                                      .pinkAccent.shade400,
-                                                )))),
-                                    const SizedBox(
-                                      width: 10,
+                              const Text('POS',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15)),
+                              Row(children: [
+                                Container(
+                                    height: 45,
+                                    width: 45,
+                                    decoration: BoxDecoration(
+                                        color:
+                                            Colors.pinkAccent.withOpacity(0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(5.0)),
+                                    child: Center(
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Icon(
+                                              Icons.attach_money,
+                                              color: Colors.pinkAccent.shade400,
+                                            )))),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Cash',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400)),
+                                      Text('Rs. ${myFormat.format(cashRs)}',
+                                          style: TextStyle(
+                                              fontSize: size.width * 0.016,
+                                              fontWeight: FontWeight.w700)),
+                                    ])
+                              ]),
+                              Row(children: [
+                                Container(
+                                    height: 45,
+                                    width: 45,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.pinkAccent.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(5.0),
                                     ),
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('Cash',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w400)),
-                                          Text('Rs. ${myFormat.format(cashRs)}',
-                                              style: TextStyle(
-                                                  fontSize: size.width * 0.016,
-                                                  fontWeight: FontWeight.w700)),
-                                        ])
-                                  ]),
-                                  Row(children: [
-                                    Container(
-                                        height: 45,
-                                        width: 45,
-                                        decoration: BoxDecoration(
-                                          color: Colors.pinkAccent
-                                              .withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                        child: Center(
-                                            child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(
-                                            Icons.account_balance,
-                                            color: Colors.pinkAccent.shade400,
-                                          ),
-                                        ))),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('Bank',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w400)),
-                                          Text('Rs. ${myFormat.format(bankRs)}',
-                                              style: TextStyle(
-                                                  fontSize: size.width * 0.016,
-                                                  fontWeight: FontWeight.w700))
-                                        ])
-                                  ]),
-                                  Row(children: [
-                                    Container(
-                                        height: 45,
-                                        width: 45,
-                                        decoration: BoxDecoration(
-                                          color: Colors.pinkAccent
-                                              .withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                        child: Center(
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons.credit_score,
-                                                  color: Colors
-                                                      .pinkAccent.shade400,
-                                                )))),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text('CR',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w400)),
-                                          Text('Rs. ${myFormat.format(crRs)}',
-                                              style: TextStyle(
-                                                  fontSize: size.width * 0.016,
-                                                  fontWeight: FontWeight.w700))
-                                        ])
-                                  ])
-                                ]))))
-              ])
+                                    child: Center(
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Icon(
+                                              Icons.credit_score,
+                                              color: Colors.pinkAccent.shade400,
+                                            )))),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('CR',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400)),
+                                      Text('Rs. ${myFormat.format(crRs)}',
+                                          style: TextStyle(
+                                              fontSize: size.width * 0.016,
+                                              fontWeight: FontWeight.w700))
+                                    ])
+                              ]),
+                              Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.orange.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(earnicon,
+                                                      color: Colors
+                                                          .orange.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Today Expense',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(expenseRs)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                            ]))))
+              ]),
+               const SizedBox(height: 10),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+                Container(
+                    width: size.width * 0.412,
+                    decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(5.0)),
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                    
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.purple.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(earnicon,
+                                                      color: Colors
+                                                          .purple.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Collected CR',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(todaySales)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                                    
+                                  ]))
+                            ]))),
+                const SizedBox(width: 8),
+                Container(
+                    width: size.width * 0.412,
+                    decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(5.0)),
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                    
+                                    Row(children: [
+                                      Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  Colors.orange.withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Icon(earnicon,
+                                                      color: Colors
+                                                          .orange.shade400)))),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Today Expense',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            Text(
+                                                'Rs. ${myFormat.format(expenseRs)}',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        size.width * 0.016,
+                                                    fontWeight:
+                                                        FontWeight.w700))
+                                          ])
+                                    ]),
+                                    
+                                  ]))
+                            ]))),
+              ]),
             ])));
   }
 }

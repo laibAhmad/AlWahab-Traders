@@ -24,6 +24,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   TextEditingController expenseName = TextEditingController();
   TextEditingController price = TextEditingController();
 
+  TextEditingController controller = TextEditingController();
+
   NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
 
   String expense = '';
@@ -144,6 +146,38 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           });
         }
       });
+    } else if (n == 3) {
+      await invoiceRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          index = index + 1;
+          if ((element['inovno']).toString().compareTo(controller.text)==0) {
+            Invoices list = Invoices(
+                date: element['date'],
+                id: element.id,
+                bank: element['bankRs'],
+                cash: element['cashRs'],
+                cr: element['crRs'],
+                netTotal: element['netTotal'],
+                profit: element['profit'],
+                cname: element['customer'],
+                invo: element['inovno'],
+                paytype: element['payType'],
+                totalitems: element['totalItems'],
+                invoiceitems: [],
+                index: index);
+
+            ivoices.add(list);
+
+            setState(() {});
+          }
+        }
+      }).whenComplete(() {
+        if (ivoices.isEmpty) {
+          setState(() {
+            error = 'No Invoices yet';
+          });
+        }
+      });
     }
     getInvoiceItems();
     getSortList();
@@ -178,9 +212,6 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   @override
   void initState() {
     getInvoices(2);
-
-    // getInvoiceItems();
-
     super.initState();
   }
 
@@ -296,6 +327,33 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         ],
                       ),
                       Text('Invoices:   ${ivoices.length}'),
+                      Row(
+                        children: [
+                          SizedBox(
+                              width: size.width * 0.17,
+                                                        height: size.height * 0.05,
+
+                              child: TextFormField(
+                                  controller: controller,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Search by Invoice No.',
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      error = '';
+                                    });
+                                     getInvoices(3);
+                                  })),
+                                  TextButton(onPressed: (){
+                                    if(controller.text.isNotEmpty){
+                                      setState(() {
+                                      error = '';
+                                    });
+                                     getInvoices(3);
+                                    }
+                                  }, child:const Text('Search'))
+                        ],
+                      ),
                       ivoices.isEmpty
                           ? error != ''
                               ? Center(child: Text(error))
@@ -307,13 +365,12 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 )
                           : SizedBox(
                               width: size.width * 0.85,
-                              height: size.height * 0.75,
+                              height: (size.height * 0.73),
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: ivoices.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   return Card(
-                                    clipBehavior: Clip.antiAlias,
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(

@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
       ),
       home: currentUser == null || currentUser == ''
           ? const LoginScreen()
-          : const HomeScreen(),
+          : const HomeScreen(cname: '', cr: 0, id: ''),
     );
   }
 }

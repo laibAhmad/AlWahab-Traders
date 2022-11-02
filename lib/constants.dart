@@ -10,7 +10,6 @@ int? invoiceNo;
 
 int profit = 0;
 int cashRs = 0;
-int bankRs = 0;
 int crRs = 0;
 int totalRs = 0;
 
