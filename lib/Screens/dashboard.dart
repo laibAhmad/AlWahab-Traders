@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:inventory_system/constants.dart';
 
 import '../Models/data.dart';
+import '../Models/text_loading.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -29,36 +30,82 @@ class _DashboardState extends State<Dashboard> {
   int month = 0;
   int year = 0;
 
-  int expenseRs=0;
+  int expenseRs = 0;
 
   int todaySalesT = 0;
   int cashSalesT = 0;
   int crSalesT = 0;
   int totalPcsT = 0;
 
-  int todayPro = 0;
-  int weekPro = 0;
-  int monthPro = 0;
-  int yearPro = 0;
+  bool textLoading = false;
+  bool crtextLoading = false;
 
-  int todayNo = 0;
-  int weekNo = 0;
-  int monthNo = 0;
-  int yearno = 0;
-
-  int todayCr = 0;
-  int weekCr = 0;
-  int monthCr = 0;
-  int yearCr = 0;
+  bool tcrtextLoading = false;
+  bool tcashloading = false;
+  bool expense = false;
 
   int cash = 0;
   int cr = 0;
 
+  int collectedCR = 0;
+
   List<Invoices> invoiceList = [];
+
+  List<CustomerList> crList = [];
+
+  List<int> remaingCRs = [];
+
+  int remainedCR = 0;
+
+  Future<List<CustomerList>> getCollectedCRList() async {
+    crList.clear();
+    await customerRef.get().asStream().forEach((element) async {
+      for (var e in element) {
+        await customerRef
+            .document(e.id)
+            .collection('cr')
+            .get()
+            .asStream()
+            .forEach((elements) {
+          for (var s in elements) {
+            if ((s['date']).toString().compareTo(date) == 0) {
+              if ((s['status']) == false) {
+                CustomerList l = CustomerList(
+                    cr: s['cr'], date: s['date'], status: s['status']);
+
+                crList.add(l);
+                setState(() {});
+              }
+            }
+          }
+        });
+      }
+      getCollectedCR();
+    });
+    return crList;
+  }
+
+  getCollectedCR() {
+    for (int i = 0; i < crList.length; i++) {
+      setState(() {
+        collectedCR = collectedCR + crList[i].cr;
+      });
+    }
+    setState(() {
+      ccR = collectedCR;
+      crtextLoading = false;
+    });
+  }
 
   @override
   void initState() {
+    textLoading = true;
+    crtextLoading = true;
+    tcrtextLoading = true;
+    tcashloading = true;
+    expense = true;
     getInvoices();
+    getCollectedCRList();
     getcash();
     getCR();
     getExpnses();
@@ -67,6 +114,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<List<Invoices>> getInvoices() async {
+    invoiceList.clear();
     await invoiceRef.get().asStream().forEach((element) {
       for (var element in element) {
         if ((element['date']).toString().contains(date)) {
@@ -81,7 +129,7 @@ class _DashboardState extends State<Dashboard> {
                 profit: element['profit'],
                 cname: '',
                 invo: 0,
-                paytype: '',
+                paytype: element['payType'],
                 totalitems: element['totalItems'],
                 invoiceitems: [],
                 index: 0);
@@ -92,6 +140,10 @@ class _DashboardState extends State<Dashboard> {
           }
         }
       }
+    }).then((value) {
+      setState(() {
+        textLoading = false;
+      });
     });
     getsalesiconActivity();
     return invoiceList;
@@ -99,26 +151,51 @@ class _DashboardState extends State<Dashboard> {
 
   getsalesiconActivity() {
     for (var i = 0; i < invoiceList.length; i++) {
-      //today
-      todaySalesT = todaySalesT + invoiceList[i].netTotal;
-      cashSalesT = cashSalesT + invoiceList[i].cash + invoiceList[i].bank;
-      crSalesT = crSalesT + invoiceList[i].cr;
-      totalPcsT = totalPcsT + invoiceList[i].totalitems;
-      todaySales = todaySalesT;
-      cashSales = cashSalesT;
-      crSales = crSalesT;
-      totalPcs = totalPcsT;
+      setState(() {
+        todaySalesT = todaySalesT + invoiceList[i].netTotal;
+      });
+      if ((invoiceList[i].paytype).contains('Cash')) {
+        setState(() {
+          cashSalesT = cashSalesT + invoiceList[i].netTotal;
+        });
+      } else if ((invoiceList[i].paytype).contains('CR')) {
+        setState(() {
+          crSalesT = crSalesT + invoiceList[i].netTotal;
+        });
+      }
+      setState(() {
+        totalPcsT = totalPcsT + invoiceList[i].totalitems;
+        todaySales = todaySalesT;
+        cashSales = cashSalesT;
+        crSales = (crSalesT).abs();
+        totalPcs = totalPcsT;
+      });
     }
   }
 
-  Future<int> getCR() async {
-    await pos.document('CR Rs').get().asStream().forEach((element) {
-      cr = element['cr'];
+  Future<List<int>> getCR() async {
+    remaingCRs.clear();
+    await customerRef.get().asStream().forEach((element) async {
+      for (var e in element) {
+        remaingCRs.add(e['cr']);
+
+        setState(() {});
+      }
+      getTotalCR();
+    }).then((value) {
       setState(() {
-        crRs = cr;
+        tcrtextLoading = false;
       });
     });
-    return crRs;
+    return remaingCRs;
+  }
+
+  getTotalCR() {
+    for (var i = 0; i < remaingCRs.length; i++) {
+      setState(() {
+        remainedCR = remainedCR + remaingCRs[i];
+      });
+    }
   }
 
   Future<int> getcash() async {
@@ -127,29 +204,37 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         cashRs = cash;
       });
+    }).then((value) {
+      setState(() {
+        tcashloading = false;
+      });
     });
     return cashRs;
   }
 
-  Future<int> getExpnses() async{
+  Future<int> getExpnses() async {
     await expenseRef.get().asStream().forEach((element) {
-        for (var element in element) {
-          if ((element['date']).toString().compareTo(date)==0) {
-            Expenses list = Expenses(
-                date: element['date'],
-                expenseName: element['expense'],
-                spentRs: element['spent'],
-                spendfrom: element['spentFrom'],
-                id: element.id);
+      for (var element in element) {
+        if ((element['date']).toString().compareTo(date) == 0) {
+          Expenses list = Expenses(
+              date: element['date'],
+              expenseName: element['expense'],
+              spentRs: element['spent'],
+              spendfrom: element['spentFrom'],
+              id: element.id);
 
-            setState(() {
-              expenseRs=expenseRs+ list.spentRs;
-            });
-          }
+          setState(() {
+            expenseRs = expenseRs + list.spentRs;
+          });
         }
+      }
+    }).then((value) {
+      setState(() {
+        expense = false;
       });
+    });
 
-      return expenseRs;
+    return expenseRs;
   }
 
   @override
@@ -190,17 +275,59 @@ class _DashboardState extends State<Dashboard> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text('Today',
-                                                  style: TextStyle(
+                                              const Text(
+                                                'Today',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              InkWell(
+                                                onTap: () async {
+                                                  DateTime? pickedDate =
+                                                      await showDatePicker(
+                                                          context: context,
+                                                          initialDate:
+                                                              DateTime.now(),
+                                                          firstDate:
+                                                              DateTime(2022),
+                                                          lastDate:
+                                                              DateTime.now());
+
+                                                  if (pickedDate != null) {
+                                                    String formattedDate =
+                                                        DateFormat('yyyy-MM-dd')
+                                                            .format(pickedDate);
+
+                                                    setState(() {
+                                                      date = formattedDate;
+                                                      textLoading = true;
+                                                      crtextLoading = true;
+                                                      expense = true;
+                                                      expenseRs = 0;
+                                                      todaySalesT = 0;
+                                                      cashSalesT = 0;
+                                                      crSalesT = 0;
+                                                      totalPcsT = 0;
+                                                      todaySales = 0;
+                                                      cashSales = 0;
+                                                      crSales = 0;
+                                                      totalPcs = 0;
+                                                      collectedCR = 0;
+                                                      ccR = 0;
+                                                      getInvoices();
+                                                      getCollectedCRList();
+                                                      getExpnses();
+                                                    });
+                                                  } else {}
+                                                },
+                                                child: Text(
+                                                  date,
+                                                  style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      fontSize: 15)),
-                                           
-                                               Text(date,
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15)),
+                                                      fontSize: 15),
+                                                ),
+                                              ),
                                             ])),
                                     Row(children: [
                                       Container(
@@ -227,13 +354,15 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(todaySales)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            textLoading
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(todaySales)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ]),
                                     Row(children: [
@@ -263,13 +392,15 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(cashSales)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            textLoading
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(cashSales)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ]),
                                     Row(children: [
@@ -297,13 +428,15 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(crSales)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            textLoading
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(crSales)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ]),
                                     Row(children: [
@@ -331,12 +464,14 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text('$totalPcs',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            textLoading
+                                                ? const TextLoading()
+                                                : Text('$totalPcs',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ])
                                   ]))
@@ -387,10 +522,13 @@ class _DashboardState extends State<Dashboard> {
                                       const Text('Cash',
                                           style: TextStyle(
                                               fontWeight: FontWeight.w400)),
-                                      Text('Rs. ${myFormat.format(cashRs)}',
-                                          style: TextStyle(
-                                              fontSize: size.width * 0.016,
-                                              fontWeight: FontWeight.w700)),
+                                      tcashloading
+                                          ? const TextLoading()
+                                          : Text(
+                                              'Rs. ${myFormat.format(cashRs)}',
+                                              style: TextStyle(
+                                                  fontSize: size.width * 0.016,
+                                                  fontWeight: FontWeight.w700)),
                                     ])
                               ]),
                               Row(children: [
@@ -419,49 +557,44 @@ class _DashboardState extends State<Dashboard> {
                                       const Text('CR',
                                           style: TextStyle(
                                               fontWeight: FontWeight.w400)),
-                                      Text('Rs. ${myFormat.format(crRs)}',
+                                      tcrtextLoading
+                                          ? const TextLoading()
+                                          : Text(
+                                              'Rs. ${myFormat.format(remainedCR)}',
+                                              style: TextStyle(
+                                                  fontSize: size.width * 0.016,
+                                                  fontWeight: FontWeight.w700))
+                                    ])
+                              ]),
+                              Row(children: [
+                                Container(
+                                    height: 45,
+                                    width: 45,
+                                    decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(5.0)),
+                                    child: Center(
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Icon(earnicon,
+                                                color: Colors.transparent)))),
+                                const SizedBox(width: 10),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400)),
+                                      Text('',
                                           style: TextStyle(
                                               fontSize: size.width * 0.016,
                                               fontWeight: FontWeight.w700))
                                     ])
                               ]),
-                              Row(children: [
-                                      Container(
-                                          height: 45,
-                                          width: 45,
-                                          decoration: BoxDecoration(
-                                              color:
-                                                  Colors.orange.withOpacity(0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0)),
-                                          child: Center(
-                                              child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Icon(earnicon,
-                                                      color: Colors
-                                                          .orange.shade400)))),
-                                      const SizedBox(width: 10),
-                                      Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text('Today Expense',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(expenseRs)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
-                                          ])
-                                    ]),
                             ]))))
               ]),
-               const SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                 Container(
                     width: size.width * 0.412,
@@ -480,14 +613,13 @@ class _DashboardState extends State<Dashboard> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                    
                                     Row(children: [
                                       Container(
                                           height: 45,
                                           width: 45,
                                           decoration: BoxDecoration(
-                                              color:
-                                                  Colors.purple.withOpacity(0.15),
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
                                               borderRadius:
                                                   BorderRadius.circular(5.0)),
                                           child: Center(
@@ -506,16 +638,17 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(todaySales)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            crtextLoading
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(ccR)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ]),
-                                    
                                   ]))
                             ]))),
                 const SizedBox(width: 8),
@@ -536,14 +669,13 @@ class _DashboardState extends State<Dashboard> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                    
                                     Row(children: [
                                       Container(
                                           height: 45,
                                           width: 45,
                                           decoration: BoxDecoration(
-                                              color:
-                                                  Colors.orange.withOpacity(0.15),
+                                              color: Colors.orange
+                                                  .withOpacity(0.15),
                                               borderRadius:
                                                   BorderRadius.circular(5.0)),
                                           child: Center(
@@ -562,16 +694,17 @@ class _DashboardState extends State<Dashboard> {
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),
-                                            Text(
-                                                'Rs. ${myFormat.format(expenseRs)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700))
+                                            expense
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(expenseRs)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700))
                                           ])
                                     ]),
-                                    
                                   ]))
                             ]))),
               ]),

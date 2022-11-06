@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firedart/firestore/firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pdf/pdf.dart';
@@ -69,8 +68,8 @@ class _NewSaleState extends State<NewSale> {
   int netTotal = 0;
   bool select = false;
 
-  int cashRs = 0;
-  int crRs = 0;
+  int cashRss = 0;
+  int crRss = 0;
   int bankRs = 0;
   String pay = 'Cash';
 
@@ -84,7 +83,7 @@ class _NewSaleState extends State<NewSale> {
         invoiceNo = 0;
       });
     }
-    if (invoiceNo != 0 && invoiceNo! < 101) {
+    if (invoiceNo != 0 && invoiceNo! <= 100) {
       setState(() {
         invoiceNo = invoiceNo!;
       });
@@ -1031,13 +1030,13 @@ class _NewSaleState extends State<NewSale> {
                                           cash.clear();
                                           cashbank.clear();
                                           cashcr.clear();
-                                          cashRs = 0;
+                                          cashRss = 0;
                                           cr.clear();
-                                          crRs = 0;
+                                          crRss = 0;
                                         });
                                         if (pay == 'CR') {
                                           setState(() {
-                                            crRs = netTotal -
+                                            crRss = netTotal -
                                                 discount +
                                                 int.parse(pervCR);
                                           });
@@ -1078,8 +1077,8 @@ class _NewSaleState extends State<NewSale> {
                                               ],
                                               onChanged: (val) {
                                                 setState(() {
-                                                  cashRs = int.parse(val);
-                                                  crRs = (netTotal -
+                                                  cashRss = int.parse(val);
+                                                  crRss = (netTotal -
                                                           discount +
                                                           int.parse(pervCR)) -
                                                       int.parse(val);
@@ -1099,7 +1098,8 @@ class _NewSaleState extends State<NewSale> {
                                           SizedBox(
                                             width: size.width * 0.05,
                                             height: 40,
-                                            child: Center(child: Text('$crRs')),
+                                            child:
+                                                Center(child: Text('$crRss')),
                                           ),
                                         ],
                                       ),
@@ -1119,24 +1119,7 @@ class _NewSaleState extends State<NewSale> {
                                           height: 40,
                                           child: Center(
                                               child: Text(
-                                                  '${(netTotal - discount + int.parse(pervCR))}'))
-                                          // TextFormField(
-                                          //   initialValue:
-                                          //       '${}',
-                                          //   inputFormatters: [
-                                          //     FilteringTextInputFormatter
-                                          //         .digitsOnly
-                                          //   ],
-
-                                          //   onChanged: (val) {
-                                          //     setState(() {
-                                          //       crRs = int.parse(val);
-                                          //       cashRs = cashRs;
-                                          //       bankRs = bankRs;
-                                          //     });
-                                          //   },
-                                          // ),
-                                          ),
+                                                  '${(netTotal - discount + int.parse(pervCR))}'))),
                                     ],
                                   ),
                                 ),
@@ -1161,8 +1144,8 @@ class _NewSaleState extends State<NewSale> {
                                               ],
                                               onChanged: (val) {
                                                 setState(() {
-                                                  cashRs = int.parse(val);
-                                                  crRs = (netTotal -
+                                                  cashRss = int.parse(val);
+                                                  crRss = (netTotal -
                                                           discount +
                                                           int.parse(pervCR)) -
                                                       int.parse(val);
@@ -1182,8 +1165,8 @@ class _NewSaleState extends State<NewSale> {
                                           SizedBox(
                                             width: size.width * 0.05,
                                             height: 40,
-                                            child: crRs != 0
-                                                ? Center(child: Text('$crRs'))
+                                            child: crRss != 0
+                                                ? Center(child: Text('$crRss'))
                                                 : TextFormField(
                                                     controller: cr,
                                                     inputFormatters: [
@@ -1192,8 +1175,8 @@ class _NewSaleState extends State<NewSale> {
                                                     ],
                                                     onChanged: (val) {
                                                       setState(() {
-                                                        crRs = int.parse(val);
-                                                        cashRs = cashRs;
+                                                        crRss = int.parse(val);
+                                                        cashRss = cashRss;
                                                         bankRs = bankRs;
                                                       });
                                                     },
@@ -1230,7 +1213,7 @@ class _NewSaleState extends State<NewSale> {
                                                 netTotal -
                                                     discount +
                                                     int.parse(pervCR)) {
-                                              if (crRs == 0) {
+                                              if (crRss == 0) {
                                                 prints(
                                                     date,
                                                     l,
@@ -1241,8 +1224,8 @@ class _NewSaleState extends State<NewSale> {
                                                     qty, //total q of items
                                                     netTotal, //total amount
                                                     discount,
-                                                    cashRs,
-                                                    crRs,
+                                                    cashRss,
+                                                    crRss,
                                                     bankRs,
                                                     custname,
                                                     custID,
@@ -1270,15 +1253,15 @@ class _NewSaleState extends State<NewSale> {
                                                     qty, //total q of items
                                                     netTotal, //total amount
                                                     discount,
-                                                    cashRs,
-                                                    crRs,
+                                                    cashRss,
+                                                    crRss,
                                                     bankRs,
                                                     custname,
                                                     custID,
                                                     (netTotal -
                                                             discount +
                                                             int.parse(pervCR)) -
-                                                        cashRs,
+                                                        cashRss,
                                                     int.parse(pervCR),
                                                     false);
                                                 SharedPreferences prefs =
@@ -1328,7 +1311,7 @@ class _NewSaleState extends State<NewSale> {
                                                 netTotal -
                                                     discount +
                                                     int.parse(pervCR)) {
-                                              if (crRs == 0) {
+                                              if (crRss == 0) {
                                                 prints(
                                                     date,
                                                     l,
@@ -1339,8 +1322,8 @@ class _NewSaleState extends State<NewSale> {
                                                     qty, //total q of items
                                                     netTotal, //total amount
                                                     discount,
-                                                    cashRs,
-                                                    crRs,
+                                                    cashRss,
+                                                    crRss,
                                                     bankRs,
                                                     custname,
                                                     custID,
@@ -1368,15 +1351,15 @@ class _NewSaleState extends State<NewSale> {
                                                     qty, //total q of items
                                                     netTotal, //total amount
                                                     discount,
-                                                    cashRs,
-                                                    crRs,
+                                                    cashRss,
+                                                    crRss,
                                                     bankRs,
                                                     custname,
                                                     custID,
                                                     (netTotal -
                                                             discount +
                                                             int.parse(pervCR)) -
-                                                        cashRs,
+                                                        cashRss,
                                                     int.parse(pervCR),
                                                     true);
                                                 SharedPreferences prefs =
@@ -1391,51 +1374,6 @@ class _NewSaleState extends State<NewSale> {
                                                 });
                                               }
                                             }
-
-                                            // if(netTotal-discount < netTotal-discount+int.parse(custCR)){
-                                            //   if(crRs==0){
-                                            //     setState(() {
-                                            //       custCR='0';
-                                            //     });
-                                            //     print(custCR);
-                                            //   }else{
-                                            //     setState(() {
-                                            //       custCR='${(netTotal-discount+int.parse(custCR))-cashRs}';
-                                            //     });
-                                            //     print(custCR);
-                                            //   }
-                                            // }
-
-                                            // if (cn.text.isNotEmpty &&
-                                            //     cartItems.isNotEmpty) {
-                                            //   prints(
-                                            //       date,
-                                            //       l,
-                                            //       context,
-                                            //       invoiceNo! + 1,
-                                            //       cartItems,
-                                            //       pay, //cash, cr , bank
-                                            //       qty, //total q of items
-                                            //       netTotal, //total amount
-                                            //       discount,
-                                            //       cashRs,
-                                            //       crRs,
-                                            //       bankRs,
-                                            //       custname,
-                                            //       custID,
-                                            //       int.parse(custCR),
-                                            //       int.parse(pervCR),
-                                            //       true);
-                                            //   SharedPreferences prefs =
-                                            //       await SharedPreferences
-                                            //           .getInstance();
-                                            //   prefs.setInt(
-                                            //       "invoice", invoiceNo! + 1);
-
-                                            //   setState(() {
-                                            //     invoiceNo =
-                                            //         prefs.getInt('invoice');
-                                            //   });
                                           } else {
                                             setState(() {
                                               buttonload = false;
@@ -1496,56 +1434,61 @@ Future<void> prints(
   int totalProfit = 0;
   //save to DataBase
 
-  await invoiceRef.add({
+  await invoiceRef.document('$date $invoice').set({
     'inovno': invoice,
     'customer': cname,
-    'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    'date': date,
     'netTotal': netTotal - discount,
     'totalItems': qty,
     'payType': pay,
-    'cashRs': cash,
-    'crRs': cr,
+    'cashRs': cr != 0
+        ? (((pervCR - cr).abs() - (netTotal - discount))).abs()
+        : (netTotal - discount),
+    'crRs': (pervCR - cr).abs(),
     'bankRs': bank,
     'profit': 0
   }).then((value) async {
-    docId = value.id;
-
     if (custId == '') {
       customerRef.add({'customer': cname, 'cr': cr}).then((v) async {
         if (cr != 0) {
           customerRef.document(v.id).collection('cr').add({
             'date': date,
-            'cr':(pervCR-cr).abs(),
+            'cr': (pervCR - cr).abs(),
             'status': true,
-          });
-        }else if (cr == 0) {
-          customerRef.document(custId).collection('cr').add({
-            'date': date,
-            'cr': (pervCR-cr).abs(),
-            'status': false,
           });
         }
       });
     } else {
       customerRef.document(custId).update({'cr': cr}).then((v) async {
-        if (cr != 0) {
-          customerRef.document(custId).collection('cr').add({
+        if ((netTotal - discount) > cash) {
+          await customerRef.document(custId).collection('cr').add({
             'date': date,
-            'cr': (pervCR-cr).abs(),
+            'cr': (pervCR - cr).abs(),
             'status': true,
           });
-        }else if (cr == 0) {
-          customerRef.document(custId).collection('cr').add({
-            'date': date,
-            'cr': (pervCR-cr).abs(),
-            'status': false,
-          });
+        } else if ((netTotal - discount) <= cash) {
+          if (cash == (netTotal - discount)) {
+            if (pervCR != 0) {
+              await customerRef.document(custId).collection('cr').add({
+                'date': date,
+                'cr': pervCR,
+                'status': true,
+              });
+            }
+          } else if (cash > (netTotal - discount)) {
+            await customerRef.document(custId).collection('cr').add({
+              'date': date,
+              'cr':
+                  (cash - (netTotal - discount).abs()),
+              'status': false,
+            });
+          }
         }
       });
     }
 
     for (var i = 0; i < cart.length; i++) {
-      invoiceRef.document(docId!).collection('items').add({
+      invoiceRef.document('$date $invoice').collection('items').add({
         'iNo': cart[i].uid,
         'iName': cart[i].nameofItem,
         'inewP': cart[i].newPrice,
@@ -1554,22 +1497,39 @@ Future<void> prints(
       });
 
       ///minus number of items
-      Firestore.instance
-          .collection("AWT")
-          .document('inventory')
-          .collection('stock')
+      ref
           .document(cart[i].id)
           .update({'totalItems': cart[i].items - cart[i].saleItems});
 
       totalProfit =
           cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
     }
-    invoiceRef.document(docId!).update({'profit': totalProfit});
-    pos.document('Cash Rs').set({'cash': (cashRs + cash)});
-    pos.document('CR Rs').set({'cr': (crRs + (pervCR-cr))});
+    invoiceRef.document('$date $invoice').update({'profit': totalProfit});
+
+    //cash handling
+    if ((netTotal - discount) > cash) {
+        //again cr
+        pos.document('Cash Rs').set(
+          {'cash': (cashRs + cash).abs()});
+        } else if ((netTotal - discount) <= cash) {
+          if (cash == (netTotal - discount)) {
+             pos.document('Cash Rs').set(
+          {'cash': (cashRs + cash).abs()});
+          } else if (cash > (netTotal - discount)) {
+             pos.document('Cash Rs').set(
+          {'cash': (cashRs + cash).abs()});
+          }
+        }
+    if (cr != 0) {
+      pos.document('Cash Rs').set(
+          {'cash': (cashRs + ((pervCR - cr).abs() - (netTotal - discount))).abs()});
+    } else if (cr == 0) {
+      pos.document('Cash Rs').set({'cash': (cashRs + (netTotal - discount)).abs()});
+    }
+    pos.document('CR Rs').set({'cr': (crRs + (pervCR - cr)).abs()});
     pos
         .document('Total Sales')
-        .set({'Total': ((totalRs + netTotal) - discount)});
+        .set({'Total': (totalRs + (netTotal - discount))});
     pos.document('Profit').set({'Profit': (profit + totalProfit)});
 
     index = 0;

@@ -44,6 +44,7 @@ dependencies:
   pdf: ^3.8.2
   printing: ^5.9.2
   month_year_picker: ^0.2.0+2
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

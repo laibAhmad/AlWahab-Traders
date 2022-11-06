@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_system/Screens/add_stock.dart';
 import 'package:inventory_system/Screens/customer_details.dart';
+import 'package:inventory_system/Screens/monthly_repo.dart';
 
 import 'package:inventory_system/Screens/return.dart';
 import 'package:inventory_system/Screens/stock.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:inventory_system/Screens/cash_receive.dart';
 
 import 'Models/data.dart';
-import 'Screens/alert.dart';
 import 'Screens/customer.dart';
 import 'Screens/dashboard.dart';
 import 'Screens/expenses.dart';
 import 'Screens/invoice.dart';
 import 'Screens/new_sale.dart';
+import 'Screens/china_payment.dart';
 import 'constants.dart';
-import 'login.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String cname,id;
+  final String cname, id;
   final int cr;
-  
-  const HomeScreen({Key? key, required this.cname, required this.id, required this.cr}) : super(key: key);
+
+  const HomeScreen(
+      {Key? key, required this.cname, required this.id, required this.cr})
+      : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     getData();
+    // getAlertItems();
 
     super.initState();
   }
@@ -61,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return itemsList;
   }
 
+  bool n = false;
+
   getSortList() {
     itemsList1.sort((a, b) {
       return a.name
@@ -70,10 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  getAlertItems() {
-    itemsList1.any((element) {
-      return element.total < 50;
-    });
+  bool getAlertItems() {
+    for (int i = 0; i < itemsList.length; i++) {
+      if (itemsList[i].total > 30) {
+        setState(() {
+          n = true;
+        });
+        break;
+        
+      }
+      break;
+    }
+
+    return n;
   }
 
   @override
@@ -90,10 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
       const ExpensesScreen(),
       const CustomerScreen(),
       CustomerDetails(cname: widget.cname, cr: widget.cr, id: widget.id),
-      const Icon(Icons.visibility),
-      const AlertStock(),
-      const Icon(Icons.home),
-      const Icon(Icons.visibility),
+      const ChinaPayment(),
+      const MonthlyRepo(),
+      const CashReceive(),
+      
     ];
 
     return Scaffold(
@@ -107,37 +121,36 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
               onPressed: () async {
                 setState(() {
-                  index = 9;
-                });
-              },
-              icon:const Icon(Icons.date_range)),
-          // getAlertItems()
-          //     ?
-          IconButton(
-              onPressed: () async {
-                setState(() {
                   index = 10;
                 });
               },
-              icon: Icon(Icons.add_alert, color: red)),
+              icon: const Icon(Icons.date_range)),
+          // n
+          //     ? IconButton(
+          //         onPressed: () async {
+          //           setState(() {
+          //             index = 10;
+          //           });
+          //         },
+          //         icon: Icon(Icons.add_alert, color: red))
           //     : Container(),
-          IconButton(
-              onPressed: () async {
-                setState(() {
-                  index = 0;
-                });
+          // IconButton(
+          //     onPressed: () async {
+          //       setState(() {
+          //         index = 0;
+          //       });
 
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.setString("user", '');
+          //       SharedPreferences prefs = await SharedPreferences.getInstance();
+          //       prefs.setString("user", '');
 
-                // ignore: use_build_context_synchronously
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginScreen()),
-                    (route) => false);
-              },
-              icon: const Icon(Icons.logout_rounded)),
+          //       // ignore: use_build_context_synchronously
+          //       Navigator.pushAndRemoveUntil(
+          //           context,
+          //           MaterialPageRoute(
+          //               builder: (context) => const LoginScreen()),
+          //           (route) => false);
+          //     },
+          //     icon: const Icon(Icons.logout_rounded)),
           const SizedBox(width: 10),
         ],
       ),
@@ -148,9 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: size.width * 0.15,
             height: size.height,
             child: Column(
-            
               children: [
-             
                 const SizedBox(height: 20),
                 SizedBox(
                   height: size.height * 0.5,
@@ -423,13 +434,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: index == 7
+                            color: index == 7 || index == 8
                                 ? Colors.deepPurple.withOpacity(0.2)
                                 : Colors.transparent,
                             border: Border(
                               right: BorderSide(
                                   width: 5.0,
-                                  color: index == 7
+                                  color: index == 7 || index == 8
                                       ? Colors.deepPurple
                                       : Colors.transparent),
                             ),
@@ -441,8 +452,80 @@ class _HomeScreenState extends State<HomeScreen> {
                               alignment: Alignment.centerLeft,
                               child: Text('Customers',
                                   style: TextStyle(
-                                    color: index == 7
+                                    color: index == 7 || index == 8
                                         ? Colors.deepPurple.shade900
+                                        : black,
+                                    fontSize: size.width * 0.01,
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            index = 9;
+                          });
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: index == 9
+                                ? Colors.brown.withOpacity(0.2)
+                                : Colors.transparent,
+                            border: Border(
+                              right: BorderSide(
+                                  width: 5.0,
+                                  color: index == 9
+                                      ? Colors.brown
+                                      : Colors.transparent),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                right: 8, left: 16, top: 8, bottom: 8),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('Cash Pay',
+                                  style: TextStyle(
+                                    color: index == 9
+                                        ? Colors.brown.shade900
+                                        : black,
+                                    fontSize: size.width * 0.01,
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            index = 11;
+                          });
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: index == 11
+                                ? Colors.blueGrey.withOpacity(0.2)
+                                : Colors.transparent,
+                            border: Border(
+                              right: BorderSide(
+                                  width: 5.0,
+                                  color: index == 11
+                                      ? Colors.blueGrey
+                                      : Colors.transparent),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                right: 8, left: 16, top: 8, bottom: 8),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('Cash Receive',
+                                  style: TextStyle(
+                                    color: index == 11
+                                        ? Colors.blueGrey.shade900
                                         : black,
                                     fontSize: size.width * 0.01,
                                   )),
@@ -453,72 +536,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                // Column(
-                //   children: [
-                //     Padding(
-                //       padding: const EdgeInsets.all(8.0),
-                //       child: InkWell(
-                //         onTap: () async {
-                //           setState(() {
-                //             index = 0;
-                //           });
-
-                //           SharedPreferences prefs =
-                //               await SharedPreferences.getInstance();
-                //           prefs.setString("user", '');
-
-                //           // ignore: use_build_context_synchronously
-                //           Navigator.pushAndRemoveUntil(
-                //               context,
-                //               MaterialPageRoute(
-                //                   builder: (context) => const LoginScreen()),
-                //               (route) => false);
-                //         },
-                //         child: Container(
-                //           decoration: BoxDecoration(
-                //               borderRadius: BorderRadius.circular(5),
-                //               border: Border.all(color: grey)),
-                //           child: Padding(
-                //             padding: EdgeInsets.symmetric(
-                //                 horizontal: size.height * 0.01,
-                //                 vertical: size.height * 0.01),
-                //             child: Row(
-                //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //               children: [
-                //                 Row(
-                //                   children: [
-                //                     CircleAvatar(
-                //                         radius: 15,
-                //                         backgroundColor: grey,
-                //                         foregroundColor: black,
-                //                         child: Icon(Icons.logout_rounded,
-                //                             color: black)),
-                //                     Padding(
-                //                       padding: EdgeInsets.only(
-                //                           left: size.width * 0.01),
-                //                       child: Text(
-                //                         ' Logout',
-                //                         style: TextStyle(
-                //                           color: black,
-                //                           fontSize: size.width * 0.01,
-                //                         ),
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //                 Icon(
-                //                   Icons.arrow_forward_ios_rounded,
-                //                   color: black,
-                //                   size: size.width * 0.01,
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           ),

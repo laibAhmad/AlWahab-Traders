@@ -90,3 +90,40 @@ class Customers {
   dynamic id;
   Customers({required this.customerName, required this.cr, required this.id});
 }
+
+class CustomerList{
+  int cr;
+  String date;
+  bool status;
+
+  CustomerList({required this.cr,required this.date,required this.status});
+
+}
+
+class ReturnInvoices {
+  int netTotal, totalitems;
+  dynamic id;
+  String cname, paytype;
+  List<InvoiceReturnItems> invoiceitems;
+  ReturnInvoices({
+      required this.netTotal,
+      required this.id,
+      required this.cname,
+      required this.paytype,
+      required this.totalitems,
+      required this.invoiceitems,
+      });
+}
+
+class InvoiceReturnItems {
+  String iname, ino;
+  int isold, iPrice, totalsold;
+  dynamic id;
+  InvoiceReturnItems(
+      {required this.iPrice,
+      required this.id,
+      required this.iname,
+      required this.ino,
+      required this.isold,
+      required this.totalsold});
+}

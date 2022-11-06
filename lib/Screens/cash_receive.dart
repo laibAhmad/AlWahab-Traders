@@ -5,18 +5,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import '../Models/data.dart';
-import '../constants.dart';
-import '../home.dart';
+import '../../Models/data.dart';
+import '../../constants.dart';
+import '../../home.dart';
 
-class ExpensesScreen extends StatefulWidget {
-  const ExpensesScreen({Key? key}) : super(key: key);
+class CashReceive extends StatefulWidget {
+  const CashReceive({Key? key}) : super(key: key);
 
   @override
-  State<ExpensesScreen> createState() => _ExpensesScreenState();
+  State<CashReceive> createState() => _CashReceiveState();
 }
 
-class _ExpensesScreenState extends State<ExpensesScreen> {
+class _CashReceiveState extends State<CashReceive> {
   CollectionReference pos = Firestore.instance
       .collection("AWT")
       .document('inventory')
@@ -58,14 +58,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     expenseItems.clear();
 
     if (n == 0) {
-      await expenseRef.get().asStream().forEach((element) {
+      await receiveRef.get().asStream().forEach((element) {
         for (var element in element) {
           if ((element['date']).toString().contains(expenseMonthNum)) {
             Expenses list = Expenses(
                 date: element['date'],
-                expenseName: element['expense'],
-                spentRs: element['spent'],
-                spendfrom: element['spentFrom'],
+                expenseName: element['name'],
+                spentRs: element['payment'],
+                spendfrom: element['from'],
                 id: element.id);
 
             expenseItems.add(list);
@@ -73,7 +73,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             setState(() {});
           }
         }
-        getSortList();
         getTotalExpense();
       }).whenComplete(() {
         if (expenseItems.isEmpty) {
@@ -82,15 +81,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           });
         }
       });
-    } else if (n == 2) {
-      await expenseRef.get().asStream().forEach((element) {
+      getSortList();
+    } else if (n == 1) {
+      await receiveRef.get().asStream().forEach((element) {
         for (var element in element) {
           if ((element['date']).toString().contains(listDate)) {
             Expenses list = Expenses(
                 date: element['date'],
-                expenseName: element['expense'],
-                spentRs: element['spent'],
-                spendfrom: element['spentFrom'],
+                expenseName: element['name'],
+                spentRs: element['payment'],
+                spendfrom: element['from'],
                 id: element.id);
 
             expenseItems.add(list);
@@ -98,7 +98,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             setState(() {});
           }
         }
-        getSortList();
         getTotalExpense();
       }).whenComplete(() {
         if (expenseItems.isEmpty) {
@@ -107,21 +106,21 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           });
         }
       });
+      getSortList();
     } else {
-      await expenseRef.get().asStream().forEach((element) {
+      await receiveRef.get().asStream().forEach((element) {
         for (var element in element) {
           Expenses list = Expenses(
               date: element['date'],
-              expenseName: element['expense'],
-              spentRs: element['spent'],
-              spendfrom: element['spentFrom'],
+              expenseName: element['name'],
+              spentRs: element['payment'],
+              spendfrom: element['from'],
               id: element.id);
 
           expenseItems.add(list);
 
           setState(() {});
         }
-        getSortList();
         getTotalExpense();
       }).whenComplete(() {
         if (expenseItems.isEmpty) {
@@ -131,6 +130,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         }
       });
     }
+    getSortList();
     return expenseItems;
   }
 
@@ -162,7 +162,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
-            decoration: BoxDecoration(color: Colors.pink.withOpacity(0.15)),
+            decoration: BoxDecoration(color: Colors.blueGrey.withOpacity(0.15)),
             width: size.width * 0.85,
             height: size.height * 0.17,
             alignment: Alignment.bottomLeft,
@@ -173,7 +173,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 Row(
                   children: [
                     const Text(
-                      'Add Expense                   ',
+                      'Cash Receive                   ',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
@@ -214,7 +214,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           controller: expenseName,
                           decoration: InputDecoration(
                             label: Text(
-                              'Expense...',
+                              'Receive From...',
                               style: TextStyle(color: black),
                             ),
                           ),
@@ -234,7 +234,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           ],
                           decoration: InputDecoration(
                             label: Text(
-                              'Rs. Spent',
+                              'Payment',
                               style: TextStyle(color: black),
                             ),
                           ),
@@ -247,7 +247,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       ),
                       Row(
                         children: [
-                          const Text('Spent From:   ',
+                          const Text('From:   ',
                               style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.bold)),
                           DropdownButton<String>(
@@ -284,23 +284,20 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               setState(() {
                                 load = true;
                               });
-                              Firestore.instance
-                                  .collection("AWT")
-                                  .document('inventory')
-                                  .collection('expenses')
+                              receiveRef
                                   .add({
-                                'expense': expense,
+                                'name': expense,
                                 'date': date,
-                                'spent': spend,
-                                'spentFrom': search,
+                                'payment': spend,
+                                'from': search,
                               }).then((value) {
                                 pos
                                     .document('Cash Rs')
-                                    .set({'cash': (cashRs - spend)});
+                                    .set({'cash': (cashRs + spend)});
 
                                 setState(() {
                                   load = false;
-                                  index = 6;
+                                  index = 11;
                                   Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
@@ -351,7 +348,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         children: [
                           Row(
                             children: [
-                              const Text('Your Expenses of - '),
+                              const Text('Your Payments of - '),
                               InkWell(
                                 onTap: () async {
                                   DateTime? pickedDate =
@@ -381,7 +378,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                   } else {}
                                 },
                                 child: Text(
-                                  '$expenseDate       ',
+                                  '$expenseDate         ',
                                   style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold),
@@ -403,7 +400,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                       expenseDate = 'Select Month';
                                       listDate = formattedDate;
                                       error = '';
-                                      getData(2);
+                                      getData(1);
                                       totalExpense = 0;
                                       totalExpense = getTotalExpense();
                                     });
@@ -424,13 +421,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 expenseDate = 'Select Month';
                                 listDate = 'Select Date';
                                 error = '';
-                                getData(1);
+                                getData(2);
                                 totalExpense = 0;
                                 totalExpense = getTotalExpense();
                               });
                             },
                             child: const Text(
-                              'Want to see ALL Expenses? Click here...',
+                              'Want to see ALL Payments? Click here...',
                               style: TextStyle(fontSize: 11),
                             ),
                           ),
@@ -438,13 +435,15 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       ),
                       expenseItems.isEmpty
                           ? error != ''
-                              ? Center(child: Text(error))
-                              : Center(
-                                  child: SpinKitWave(
-                                    size: size.height * 0.035,
-                                    color: black,
+                              ? Expanded(child: Center(child: Text(error)))
+                              : Expanded(
+                                child: Center(
+                                    child: SpinKitWave(
+                                      size: size.height * 0.035,
+                                      color: black,
+                                    ),
                                   ),
-                                )
+                              )
                           : SizedBox(
                               width: size.width * 0.85,
                               height: size.height * 0.6,
@@ -466,7 +465,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                             label: Flexible(
                                                 fit: FlexFit.loose,
                                                 child: Text(
-                                                  'Expense',
+                                                  'Name',
                                                   softWrap: false,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -475,7 +474,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                             label: Flexible(
                                                 fit: FlexFit.loose,
                                                 child: Text(
-                                                  'Spent Rs',
+                                                  'Payment Rs.',
                                                   softWrap: false,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -484,7 +483,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                             label: Flexible(
                                                 fit: FlexFit.loose,
                                                 child: Text(
-                                                  'Spent From',
+                                                  'From',
                                                   softWrap: false,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -520,7 +519,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       style: DefaultTextStyle.of(context).style,
                       children: <TextSpan>[
                         const TextSpan(
-                            text: 'Total Expenses:  ',
+                            text: 'Total Payment:  ',
                             style: TextStyle(fontWeight: FontWeight.bold)),
                         TextSpan(text: ' Rs. ${myFormat.format(totalExpense)}'),
                       ],

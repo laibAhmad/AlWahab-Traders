@@ -52,6 +52,10 @@ class _InStockState extends State<InStock> {
         getSortList();
         setState(() {});
       }
+    }).then((value) {
+      setState(() {
+        error='Nothing In-Stock';
+      });
     });
     return itemsList;
   }

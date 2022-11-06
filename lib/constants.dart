@@ -13,30 +13,27 @@ int cashRs = 0;
 int crRs = 0;
 int totalRs = 0;
 
-int todaySales =0;
+int ccR = 0;
+
+int todaySales = 0;
 int cashSales = 0;
 int crSales = 0;
 int totalPcs = 0;
 
-  int todayMain = 0;
-  int weekMain = 0;
-  int monthMain = 0;
-  int yearMain = 0;
+int todaySalesMo = 0;
+int cashSalesMo = 0;
+int crSalesMo = 0;
+int totalPcsMo = 0;
+int profitMo = 0;
+int expenseMo=0;
 
-  int todayProMain = 0;
-  int weekProMain = 0;
-  int monthProMain = 0;
-  int yearProMain = 0;
+int todaySalesYr = 0;
+int cashSalesYr = 0;
+int crSalesYr = 0;
+int totalPcsYr = 0;
+int profitYr = 0;
+int expenseYr=0;
 
-  int todayNoMain = 0;
-  int weekNoMain = 0;
-  int monthNoMain = 0;
-  int yearNoMain = 0;
-
-  int todayCrMain = 0;
-  int weekCrMain = 0;
-  int monthCrMain = 0;
-  int yearCrMain = 0;
 
 dynamic l;
 
@@ -53,14 +50,6 @@ Color greyBlack = Colors.white24;
 Color yellow = const Color.fromRGBO(253, 216, 53, 1);
 
 Color red = const Color.fromRGBO(229, 57, 53, 1);
-
-Color darkblue = const Color.fromARGB(255, 0, 69, 129);
-
-Color midblue = const Color.fromARGB(255, 1, 139, 189);
-
-Color lighblue = const Color.fromARGB(255, 151, 203, 220);
-
-Color dimblue = const Color.fromARGB(255, 221, 232, 240);
 
 int index = 0;
 
@@ -86,31 +75,45 @@ CollectionReference invoiceRef = Firestore.instance
     .document('inventory')
     .collection('invoices');
 
+CollectionReference returnRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('return');
+
 CollectionReference expenseRef = Firestore.instance
     .collection("AWT")
     .document('inventory')
     .collection('expenses');
 
-    
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
+CollectionReference pos = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('POS');
 
-  CollectionReference customerRef = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('customers');
+CollectionReference customerRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('customers');
+
+CollectionReference paymentRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('payment');
+
+CollectionReference receiveRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('receive');
 
 int indexList = -1;
 
-IconData salesicon =Icons.money;
+IconData salesicon = Icons.money;
 
-IconData cricon =Icons.paid;
+IconData cricon = Icons.paid;
 
-IconData earnicon=Icons.assignment_turned_in_rounded;
+IconData earnicon = Icons.assignment_turned_in_rounded;
 
-IconData profiticon = Icons.numbers; 
+IconData profiticon = Icons.numbers;
 
 String kmbgenerator(int n) {
   if (n > 999 && n < 99999) {

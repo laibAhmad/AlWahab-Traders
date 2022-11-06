@@ -3,7 +3,6 @@ import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
-import 'package:inventory_system/Screens/customer_details.dart';
 import '../Models/data.dart';
 import '../constants.dart';
 import '../home.dart';
@@ -60,7 +59,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     if (n == 0) {
       await customerRef.get().asStream().forEach((element) {
         for (var element in element) {
-          if ((element['customer']).toString().contains(controller.text)) {
+          if (((element['customer']).toString()).toLowerCase().contains((controller.text).toLowerCase())) {
             Customers list = Customers(
                 customerName: element['customer'],
                 cr: element['cr'],
@@ -102,31 +101,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     getSortList();
     return customerList1;
   }
-
-  // getInvoiceItems() async {
-
-  //   for (var i = 0; i < customerList1.length; i++) {
-  //     await invoiceRef
-  //         .document(customerList1[i].id)
-  //         .collection('items')
-  //         .get()
-  //         .asStream()
-  //         .forEach((doc) {
-  //       for (var d in doc) {
-  //         InvoiceItems l = InvoiceItems(
-  //             iPrice: d['inewP'],
-  //             id: d.id,
-  //             iname: d['iName'],
-  //             ino: d['iNo'],
-  //             isold: d['iSaleItems'],
-  //             totalsold: d['total']);
-
-  //         customerList1[i].invoiceitems.add(l);
-  //         setState(() {});
-  //       }
-  //     });
-  //   }
-  // }
 
   @override
   void initState() {

@@ -25,6 +25,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   TextEditingController price = TextEditingController();
 
   TextEditingController controller = TextEditingController();
+  TextEditingController searchName = TextEditingController();
 
   NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
 
@@ -38,7 +39,6 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
   String invoiceDate = 'Select Month';
-  // DateFormat('yMMM').format(DateTime.now());
   String invoiceMonthNum = DateFormat('y-MM').format(DateTime.now());
 
   String error = '';
@@ -51,11 +51,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   Future<List<Invoices>> getInvoices(int n) async {
     ivoices.clear();
-    int index = -1;
     if (n == 0) {
+      ivoices.clear();
       await invoiceRef.get().asStream().forEach((element) {
         for (var element in element) {
-          index = index + 1;
           if ((element['date']).toString().contains(invoiceMonthNum)) {
             Invoices list = Invoices(
                 date: element['date'],
@@ -77,6 +76,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             setState(() {});
           }
         }
+        getSortList();
+        getInvoiceItems();
       }).whenComplete(() {
         if (ivoices.isEmpty) {
           setState(() {
@@ -85,9 +86,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         }
       });
     } else if (n == 2) {
+      ivoices.clear();
+      
       await invoiceRef.get().asStream().forEach((element) {
         for (var element in element) {
-          index = index + 1;
           if ((element['date']).toString().contains(date)) {
             Invoices list = Invoices(
                 date: element['date'],
@@ -109,6 +111,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             setState(() {});
           }
         }
+        getSortList();
+        getInvoiceItems();
       }).whenComplete(() {
         if (ivoices.isEmpty) {
           setState(() {
@@ -116,10 +120,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           });
         }
       });
-    } else if(n==1) {
+    } else if (n == 1) {
+      ivoices.clear();
       await invoiceRef.get().asStream().forEach((element) {
         for (var element in element) {
-          index = index + 1;
           Invoices list = Invoices(
               date: element['date'],
               id: element.id,
@@ -139,6 +143,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
           setState(() {});
         }
+        getSortList();
+        getInvoiceItems();
       }).whenComplete(() {
         if (ivoices.isEmpty) {
           setState(() {
@@ -147,10 +153,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         }
       });
     } else if (n == 3) {
+      ivoices.clear();
       await invoiceRef.get().asStream().forEach((element) {
         for (var element in element) {
-          index = index + 1;
-          if ((element['inovno']).toString().compareTo(controller.text)==0) {
+          if ((element['inovno']).toString().compareTo(controller.text) == 0) {
             Invoices list = Invoices(
                 date: element['date'],
                 id: element.id,
@@ -171,6 +177,44 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             setState(() {});
           }
         }
+        getSortList();
+        getInvoiceItems();
+      }).whenComplete(() {
+        if (ivoices.isEmpty) {
+          setState(() {
+            error = 'No Invoices yet';
+          });
+        }
+      });
+    } else if (n == 4) {
+      ivoices.clear();
+      await invoiceRef.get().asStream().forEach((element) {
+        for (var element in element) {
+          if (((element['customer']).toLowerCase())
+              .toString()
+              .contains((searchName.text).toLowerCase())) {
+            Invoices list = Invoices(
+                date: element['date'],
+                id: element.id,
+                bank: element['bankRs'],
+                cash: element['cashRs'],
+                cr: element['crRs'],
+                netTotal: element['netTotal'],
+                profit: element['profit'],
+                cname: element['customer'],
+                invo: element['inovno'],
+                paytype: element['payType'],
+                totalitems: element['totalItems'],
+                invoiceitems: [],
+                index: index);
+
+            ivoices.add(list);
+
+            setState(() {});
+          }
+        }
+        getSortList();
+        getInvoiceItems();
       }).whenComplete(() {
         if (ivoices.isEmpty) {
           setState(() {
@@ -179,13 +223,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         }
       });
     }
-    getInvoiceItems();
-    getSortList();
     return ivoices;
   }
 
   getInvoiceItems() async {
-
     for (var i = 0; i < ivoices.length; i++) {
       await invoiceRef
           .document(ivoices[i].id)
@@ -297,7 +338,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                       invoiceDate = formattedDate;
                                       invoiceMonthNum = numM;
                                       error = '';
-                                      date='Select Date';
+                                      date = 'Select Date';
                                       getInvoices(0);
                                     });
                                   } else {}
@@ -313,7 +354,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                 onTap: () {
                                   setState(() {
                                     invoiceDate = 'Select Month';
-                                    date='Select Date';
+                                    date = 'Select Date';
                                     getInvoices(1);
                                   });
                                 },
@@ -330,46 +371,78 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                       Row(
                         children: [
                           SizedBox(
-                              width: size.width * 0.17,
-                                                        height: size.height * 0.05,
-
+                              width: size.width * 0.1,
+                              height: size.height * 0.05,
                               child: TextFormField(
                                   controller: controller,
                                   decoration: const InputDecoration(
                                     hintText: 'Search by Invoice No.',
                                   ),
                                   onChanged: (val) {
-                                    setState(() {
-                                      error = '';
-                                    });
-                                     getInvoices(3);
+                                    if (controller.text.isNotEmpty) {
+                                  setState(() {
+                                    error = '';
+                                  });
+                                  getInvoices(3);
+                                }
                                   })),
-                                  TextButton(onPressed: (){
-                                    if(controller.text.isNotEmpty){
-                                      setState(() {
-                                      error = '';
-                                    });
-                                     getInvoices(3);
-                                    }
-                                  }, child:const Text('Search'))
+                          TextButton(
+                              onPressed: () {
+                                if (controller.text.isNotEmpty) {
+                                  setState(() {
+                                    error = '';
+                                  });
+                                  getInvoices(3);
+                                }
+                              },
+                              child: const Text('Search')),
+                          const SizedBox(width: 40),
+                          SizedBox(
+                              width: size.width * 0.15,
+                              height: size.height * 0.05,
+                              child: TextFormField(
+                                  controller: searchName,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Search by Name',
+                                  ),
+                                  onChanged: (val) {
+                                if (searchName.text.isNotEmpty) {
+                                  setState(() {
+                                    error = '';
+                                  });
+                                  getInvoices(4);
+                                }
+                                  })),
+                          TextButton(
+                              onPressed: () {
+                                if (searchName.text.isNotEmpty) {
+                                  setState(() {
+                                    error = '';
+                                  });
+                                  getInvoices(4);
+                                }
+                              },
+                              child: const Text('Search'))
                         ],
                       ),
                       ivoices.isEmpty
                           ? error != ''
-                              ? Center(child: Text(error))
-                              : Center(
-                                  child: SpinKitWave(
-                                    size: size.height * 0.035,
-                                    color: black,
+                              ? Expanded(child: Center(child: Text(error)))
+                              : Expanded(
+                                child: Center(
+                                    child: SpinKitWave(
+                                      size: size.height * 0.035,
+                                      color: black,
+                                    ),
                                   ),
-                                )
+                              )
                           : SizedBox(
                               width: size.width * 0.85,
                               height: (size.height * 0.73),
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: ivoices.length,
-                                itemBuilder: (BuildContext context, int index) {
+                                itemBuilder: (BuildContext context, int j) {
                                   return Card(
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -396,7 +469,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                                     .w600)),
                                                     TextSpan(
                                                         text:
-                                                            '${ivoices[index].invo}'),
+                                                            '${ivoices[j].invo}'),
                                                   ],
                                                 ),
                                               ),
@@ -414,7 +487,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                                 FontWeight
                                                                     .w600)),
                                                     TextSpan(
-                                                        text: ivoices[index]
+                                                        text: ivoices[j]
                                                             .date),
                                                   ],
                                                 ),
@@ -439,7 +512,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                                 FontWeight
                                                                     .w600)),
                                                     TextSpan(
-                                                        text: ivoices[index]
+                                                        text: ivoices[j]
                                                             .cname),
                                                   ],
                                                 ),
@@ -459,7 +532,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                                     .w600)),
                                                     TextSpan(
                                                         text:
-                                                            'Rs. ${myFormat.format(ivoices[index].netTotal)}'),
+                                                            'Rs. ${myFormat.format(ivoices[j].netTotal)} - ${ivoices[j].paytype} Sales'),
                                                   ],
                                                 ),
                                               ),
@@ -484,28 +557,54 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                                     .w600)),
                                                     TextSpan(
                                                         text:
-                                                            '${ivoices[index].totalitems}'),
+                                                            '${ivoices[j].totalitems}'),
                                                   ],
                                                 ),
                                               ),
-                                              RichText(
-                                                text: TextSpan(
-                                                  text: '',
-                                                  style: DefaultTextStyle.of(
-                                                          context)
-                                                      .style,
-                                                  children: <TextSpan>[
-                                                    const TextSpan(
-                                                        text: 'Pay Type :  ',
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600)),
-                                                    TextSpan(
-                                                        text: ivoices[index]
-                                                            .paytype),
-                                                  ],
-                                                ),
+                                              Row(
+                                                children: [
+                                                  RichText(
+                                                    text: TextSpan(
+                                                      text: '',
+                                                      style:
+                                                          DefaultTextStyle.of(
+                                                                  context)
+                                                              .style,
+                                                      children: <TextSpan>[
+                                                        const TextSpan(
+                                                            text: 'Cash :  ',
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600)),
+                                                        TextSpan(
+                                                            text:
+                                                                '${ivoices[j].cash}'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 20),
+                                                  RichText(
+                                                    text: TextSpan(
+                                                      text: '',
+                                                      style:
+                                                          DefaultTextStyle.of(
+                                                                  context)
+                                                              .style,
+                                                      children: <TextSpan>[
+                                                        const TextSpan(
+                                                            text: 'CR :  ',
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600)),
+                                                        TextSpan(
+                                                            text:
+                                                                '${ivoices[j].cr}'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
@@ -557,7 +656,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                           const SizedBox(height: 6),
                                           for (int i = 0;
                                               i <
-                                                  ivoices[index]
+                                                  ivoices[j]
                                                       .invoiceitems
                                                       .length;
                                               i++)
@@ -568,30 +667,30 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                                     child: Text('${i + 1}')),
                                                 SizedBox(
                                                     width: size.width * 0.07,
-                                                    child: Text(ivoices[index]
+                                                    child: Text(ivoices[j]
                                                         .invoiceitems[i]
                                                         .ino)),
                                                 SizedBox(
                                                     width: size.width * 0.22,
-                                                    child: Text(ivoices[index]
+                                                    child: Text(ivoices[j]
                                                         .invoiceitems[i]
                                                         .iname)),
                                                 SizedBox(
                                                     width: size.width * 0.1,
                                                     child: Text(
-                                                        '${ivoices[index].invoiceitems[i].isold}',
+                                                        '${ivoices[j].invoiceitems[i].isold}',
                                                         textAlign:
                                                             TextAlign.end)),
                                                 SizedBox(
                                                     width: size.width * 0.18,
                                                     child: Text(
-                                                        '${ivoices[index].invoiceitems[i].iPrice}',
+                                                        '${ivoices[j].invoiceitems[i].iPrice}',
                                                         textAlign:
                                                             TextAlign.end)),
                                                 SizedBox(
                                                     width: size.width * 0.2,
                                                     child: Text(
-                                                        'Rs. ${myFormat.format(ivoices[index].invoiceitems[i].totalsold)}',
+                                                        'Rs. ${myFormat.format(ivoices[j].invoiceitems[i].totalsold)}',
                                                         textAlign:
                                                             TextAlign.end)),
                                               ],
