@@ -161,6 +161,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
       setState(() {
         todaySalesM = todaySalesM + invoiceListM[i].netTotal;
         profitM = profitM + invoiceListM[i].profit;
+
       });
 
       if ((invoiceListM[i].paytype).contains('Cash')) {
@@ -187,6 +188,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
     for (var i = 0; i < invoiceListY.length; i++) {
       setState(() {
         todaySalesY = todaySalesY + invoiceListY[i].netTotal;
+        profitY = profitY + invoiceListY[i].profit;
       });
       if ((invoiceListY[i].paytype).contains('Cash')) {
         setState(() {
@@ -203,6 +205,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
         cashSalesYr = cashSalesY;
         crSalesYr = crSalesY;
         totalPcsYr = totalPcsY;
+        profitYr = profitY;
       });
     }
   }

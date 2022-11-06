@@ -34,9 +34,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     getData();
+    getcash();
     // getAlertItems();
 
     super.initState();
+  }
+
+  int cash=0;
+  Future<int> getcash() async {
+    await pos.document('Cash Rs').get().asStream().forEach((element) {
+      cash = element['cash'];
+      setState(() {
+        cashRs = cash;
+      });
+    }).then((value) {
+      setState(() {
+      });
+    });
+    return cashRs;
   }
 
   Future<List<InStockData>> getData() async {
@@ -125,32 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
               icon: const Icon(Icons.date_range)),
-          // n
-          //     ? IconButton(
-          //         onPressed: () async {
-          //           setState(() {
-          //             index = 10;
-          //           });
-          //         },
-          //         icon: Icon(Icons.add_alert, color: red))
-          //     : Container(),
-          // IconButton(
-          //     onPressed: () async {
-          //       setState(() {
-          //         index = 0;
-          //       });
-
-          //       SharedPreferences prefs = await SharedPreferences.getInstance();
-          //       prefs.setString("user", '');
-
-          //       // ignore: use_build_context_synchronously
-          //       Navigator.pushAndRemoveUntil(
-          //           context,
-          //           MaterialPageRoute(
-          //               builder: (context) => const LoginScreen()),
-          //           (route) => false);
-          //     },
-          //     icon: const Icon(Icons.logout_rounded)),
           const SizedBox(width: 10),
         ],
       ),

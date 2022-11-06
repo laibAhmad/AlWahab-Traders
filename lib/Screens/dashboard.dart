@@ -1,5 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -16,10 +14,6 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
 
   NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
 

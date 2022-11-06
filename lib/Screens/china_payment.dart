@@ -50,8 +50,22 @@ class _ChinaPaymentState extends State<ChinaPayment> {
   @override
   void initState() {
     getData(0);
+    getcash();
 
     super.initState();
+  }
+  int cash=0;
+  Future<int> getcash() async {
+    await pos.document('Cash Rs').get().asStream().forEach((element) {
+      cash = element['cash'];
+      setState(() {
+        cashRs = cash;
+      });
+    }).then((value) {
+      setState(() {
+      });
+    });
+    return cashRs;
   }
 
   Future<List<Expenses>> getData(int n) async {

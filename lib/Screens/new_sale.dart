@@ -136,9 +136,24 @@ class _NewSaleState extends State<NewSale> {
     getInvoice();
     getCustomers();
     getData();
+    getcash();
 
     findPrinters();
     super.initState();
+  }
+
+  int cashJ=0;
+  Future<int> getcash() async {
+    await pos.document('Cash Rs').get().asStream().forEach((element) {
+      cash = element['cash'];
+      setState(() {
+        cashRs = cashJ;
+      });
+    }).then((value) {
+      setState(() {
+      });
+    });
+    return cashRs;
   }
 
   Future<List<InStockData>> getData() async {
@@ -1429,7 +1444,6 @@ Future<void> prints(
   int pervCR,
   bool print,
 ) async {
-  String? docId;
 
   int totalProfit = 0;
   //save to DataBase
@@ -1501,8 +1515,8 @@ Future<void> prints(
           .document(cart[i].id)
           .update({'totalItems': cart[i].items - cart[i].saleItems});
 
-      totalProfit =
-          cart[i].totalP - (cart[i].saleItems * cart[i].pp) - discount;
+      totalProfit =totalProfit+
+          (cart[i].totalP - (cart[i].saleItems * cart[i].pp)) - discount;
     }
     invoiceRef.document('$date $invoice').update({'profit': totalProfit});
 

@@ -294,8 +294,23 @@ class _CustomerDetailsState extends State<CustomerDetails> {
     ivoices.clear();
     custDetails.clear();
     getInvoices(0);
+    getcash();
 
     super.initState();
+  }
+
+  int cash=0;
+  Future<int> getcash() async {
+    await pos.document('Cash Rs').get().asStream().forEach((element) {
+      cash = element['cash'];
+      setState(() {
+        cashRs = cash;
+      });
+    }).then((value) {
+      setState(() {
+      });
+    });
+    return cashRs;
   }
 
   getSortList() {
@@ -537,6 +552,9 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                                       }).then((value) {
                                         customerRef
                                           .document(widget.id).update({'cr': (widget.cr -crDialog).abs()});
+                                           pos
+                                    .document('Cash Rs')
+                                    .set({'cash': (cashRs + crDialog)});
                                       });
 
                                       setState(() {
