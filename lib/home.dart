@@ -39,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-
   Future<List<InStockData>> getData() async {
     indexList = indexList - 1;
     await ref.get().asStream().forEach((element) {
@@ -83,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
           n = true;
         });
         break;
-        
       }
       break;
     }
@@ -119,6 +117,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         elevation: 0,
         actions: [
+          IconButton(
+              onPressed: () async {
+                setState(() {
+                  profit = 0;
+                  cashRs = 0;
+                  crRs = 0;
+                  totalRs = 0;
+
+                  ccR = 0;
+                  tCash = 0;
+
+                  todaySales = 0;
+                  cashSales = 0;
+                  crSales = 0;
+                  totalPcs = 0;
+
+                  todaySalesMo = 0;
+                  cashSalesMo = 0;
+                  crSalesMo = 0;
+                  totalPcsMo = 0;
+                  profitMo = 0;
+                  expenseMo = 0;
+
+                  todaySalesYr = 0;
+                  cashSalesYr = 0;
+                  crSalesYr = 0;
+                  totalPcsYr = 0;
+                  profitYr = 0;
+                  expenseYr = 0;
+
+                  itemsList1 = [];
+
+                  customerList = [];
+                  index = 0;
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const HomeScreen(cname: '', cr: 0, id: '')));
+                });
+              },
+              icon: const Icon(Icons.refresh)),
+          const SizedBox(width: 10),
           IconButton(
               onPressed: () async {
                 setState(() {

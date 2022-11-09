@@ -63,6 +63,9 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
 
   List<CustomerList> crList = [];
 
+  bool tcashloadingM =false;
+  bool tcashloadingY =false;
+
   @override
   void initState() {
     profitloadingYr = true;
@@ -73,6 +76,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
     getYearInvoices();
     getMonthExpnses();
     getYearExpnses();
+    //profit
     getAllCashList();
     getAllCashListY();
 
@@ -87,6 +91,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
   List<CashList> profitListFalseY = [];
   int profitListTotalY = 0;
 
+////month profit
   Future<List<CashList>> getAllCashList() async {
     profitListTrue.clear();
     await profitRef.get().asStream().forEach((element) async {
@@ -163,7 +168,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
           }
         }
       }
-      getCollectedCash();
+      getCollectedCashY();
     });
     return profitListTrueY;
   }
@@ -174,7 +179,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
         profitListTotalY = profitListTotalY + profitListTrueY[i].cr;
       });
     }
-    getFalseCashList();
+    getFalseCashListY();
   }
 
   Future<List<CashList>> getFalseCashListY() async {
@@ -191,7 +196,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
           }
         }
       }
-      getFasleCash();
+      getFasleCashY();
     });
     return profitListFalseY;
   }
@@ -673,7 +678,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
                                             profitloadingMo
                                                 ? const TextLoading()
                                                 : Text(
-                                                    'Rs. ${myFormat.format(profitMo)}',
+                                                    'Rs. ${myFormat.format(profitM)}',
                                                     style: TextStyle(
                                                         fontSize:
                                                             size.width * 0.016,
@@ -1012,7 +1017,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
                                             profitloadingYr
                                                 ? const TextLoading()
                                                 : Text(
-                                                    'Rs. ${myFormat.format(profitYr)}',
+                                                    'Rs. ${myFormat.format(profitY)}',
                                                     style: TextStyle(
                                                         fontSize:
                                                             size.width * 0.016,

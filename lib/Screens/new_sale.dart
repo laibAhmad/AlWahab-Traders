@@ -112,7 +112,18 @@ class _NewSaleState extends State<NewSale> {
         netTotal = netTotal + cartItems[i].totalP;
       });
     }
+
     return netTotal;
+  }
+
+  getCashRss() {
+    for (var i = 0; i < cartItems.length; i++) {
+      setState(() {
+        cashRss = netTotal - discount;
+        cash=TextEditingController(text: (netTotal - discount).toString());
+      });
+    }
+    return cashRss.toString();
   }
 
   Future<List<Printer>> findPrinters() async {
@@ -136,11 +147,11 @@ class _NewSaleState extends State<NewSale> {
     getInvoice();
     getCustomers();
     getData();
+    cash=TextEditingController(text: getCashRss());
 
     findPrinters();
     super.initState();
   }
-
 
   Future<List<InStockData>> getData() async {
     indexList = indexList - 1;
@@ -271,7 +282,7 @@ class _NewSaleState extends State<NewSale> {
                       SizedBox(
                           width: size.width * 0.17,
                           height: size.height * 0.08,
-                          child: TextFormField(
+                          child: TextField(
                               controller: cn,
                               decoration: InputDecoration(
                                 label: Text(
@@ -692,6 +703,7 @@ class _NewSaleState extends State<NewSale> {
                                                     });
                                                     getTotalQty();
                                                     getTotalPrice();
+                                                    getCashRss();
                                                     pricePerUnit.clear();
                                                     totalItems.clear();
                                                   } else {
@@ -827,6 +839,7 @@ class _NewSaleState extends State<NewSale> {
                                                     });
                                                     getTotalQty();
                                                     getTotalPrice();
+                                                    getCashRss();
                                                   },
                                                 ),
                                               ),
@@ -864,14 +877,13 @@ class _NewSaleState extends State<NewSale> {
                                                               item.saleItems;
                                                     });
                                                     getTotalPrice();
-                                                    // getTotalQty();
+                                                    getCashRss();
                                                   },
                                                 ),
                                               ),
                                               DataCell(
                                                 Text('${item.totalP}'),
                                               ),
-                                              // DataCell(Text('${item.totalP}')),
                                               DataCell(IconButton(
                                                 icon: Icon(
                                                   Icons.delete,
@@ -884,6 +896,7 @@ class _NewSaleState extends State<NewSale> {
                                                   });
                                                   getTotalPrice();
                                                   getTotalQty();
+                                                  getCashRss();
                                                 },
                                               )),
                                             ]))
@@ -950,6 +963,7 @@ class _NewSaleState extends State<NewSale> {
                                         onChanged: (val) {
                                           setState(() {
                                             discount = int.parse(val);
+                                            getCashRss();
                                           });
                                         },
                                       ),
@@ -1041,6 +1055,10 @@ class _NewSaleState extends State<NewSale> {
                                                 discount +
                                                 int.parse(pervCR);
                                           });
+                                        } else if (pay == 'Cash') {
+                                          setState(() {
+                                            cashRss = netTotal - discount;
+                                          });
                                         }
                                       },
                                       items: <String>[
@@ -1072,6 +1090,7 @@ class _NewSaleState extends State<NewSale> {
                                             height: 40,
                                             child: TextFormField(
                                               controller: cash,
+                                              // initialValue: getCashRss(),
                                               inputFormatters: [
                                                 FilteringTextInputFormatter
                                                     .digitsOnly
@@ -1177,7 +1196,7 @@ class _NewSaleState extends State<NewSale> {
                                                     onChanged: (val) {
                                                       setState(() {
                                                         crRss = int.parse(val);
-                                                        cashRss = cashRss;
+                                                        cashRss = 0;
                                                         bankRs = bankRs;
                                                       });
                                                     },
@@ -1430,7 +1449,6 @@ Future<void> prints(
   int pervCR,
   bool print,
 ) async {
-  
   int totalProfit = 0;
   //save to DataBase
 
@@ -1478,8 +1496,7 @@ Future<void> prints(
           } else if (cash > (netTotal - discount)) {
             await customerRef.document(custId).collection('cr').add({
               'date': date,
-              'cr':
-                  (cash - (netTotal - discount).abs()),
+              'cr': (cash - (netTotal - discount).abs()),
               'status': false,
             });
           }
@@ -1501,37 +1518,25 @@ Future<void> prints(
           .document(cart[i].id)
           .update({'totalItems': cart[i].items - cart[i].saleItems});
 
-      totalProfit =totalProfit+
-          (cart[i].totalP - (cart[i].saleItems * cart[i].pp)) - discount;
+      totalProfit = totalProfit +
+          (cart[i].totalP - (cart[i].saleItems * cart[i].pp)) -
+          discount;
     }
     invoiceRef.document('$date $invoice').update({'profit': totalProfit});
 
-    
-      ////////////cash new coding
-      pos.add({
-        'date':date,
-        'cash':(cash).abs(),
-        'status':true,
-      });
+    ////////////cash new coding
+    pos.add({
+      'date': date,
+      'cash': (cash).abs(),
+      'status': true,
+    });
 
-      profitRef.add({
-        'date':date,
-        'invo':invoice,
-        'profit': totalProfit,
-        'status':true,
-      });
-
-    if (cr != 0) {
-      pos.document('Cash Rs').set(
-          {'cash': (cashRs + ((pervCR - cr).abs() - (netTotal - discount))).abs()});
-    } else if (cr == 0) {
-      pos.document('Cash Rs').set({'cash': (cashRs + (netTotal - discount)).abs()});
-    }
-    pos.document('CR Rs').set({'cr': (crRs + (pervCR - cr)).abs()});
-    pos
-        .document('Total Sales')
-        .set({'Total': (totalRs + (netTotal - discount))});
-    pos.document('Profit').set({'Profit': (profit + totalProfit)});
+    profitRef.add({
+      'date': date,
+      'invo': invoice,
+      'profit': totalProfit,
+      'status': true,
+    });
 
     index = 0;
     Navigator.pushReplacement(
