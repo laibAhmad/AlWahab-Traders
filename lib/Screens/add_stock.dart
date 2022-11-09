@@ -1,4 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -213,10 +212,7 @@ class _AddStockState extends State<AddStock> {
                           setState(() {
                             load = true;
                           });
-                          Firestore.instance
-                              .collection("AWT")
-                              .document('inventory')
-                              .collection('stock')
+                          ref
                               .add({
                             'id': uid,
                             'name': name,

@@ -1,5 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -15,11 +13,6 @@ class Return extends StatefulWidget {
 }
 
 class _ReturnState extends State<Return> {
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
-
   TextEditingController expenseName = TextEditingController();
   TextEditingController invController = TextEditingController();
 
@@ -28,9 +21,6 @@ class _ReturnState extends State<Return> {
 
   TextEditingController cnameText = TextEditingController();
   TextEditingController cr = TextEditingController();
-
-  String cnameDialog = '';
-  int crDialog = 0;
 
   NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
 
@@ -45,6 +35,10 @@ class _ReturnState extends State<Return> {
   dynamic returnItems;
 
   int totalItemPrice = 0;
+  int minusProfit = 0;
+
+  int perviousCR = 0;
+  // int pervItemCR = 0;
 
   String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
   String invoiceDate = 'Select Month';
@@ -56,6 +50,7 @@ class _ReturnState extends State<Return> {
   String returnerror = 'Enter Details';
 
   int pervItems = 0;
+  int purchasePrice = 0;
 
   bool load = false;
   bool returnShow = false;
@@ -81,7 +76,7 @@ class _ReturnState extends State<Return> {
                 cash: 0,
                 cr: 0,
                 netTotal: 0,
-                profit:0,
+                profit: 0,
                 cname: element['customer'],
                 invo: element['inovno'],
                 paytype: '0',
@@ -116,7 +111,7 @@ class _ReturnState extends State<Return> {
                 cash: 0,
                 cr: 0,
                 netTotal: 0,
-                profit:0,
+                profit: 0,
                 cname: element['customer'],
                 invo: element['inovno'],
                 paytype: '0',
@@ -144,18 +139,18 @@ class _ReturnState extends State<Return> {
         for (var element in element) {
           Invoices list = Invoices(
               date: element['date'],
-                id: element.id,
-                bank: 0,
-                cash: 0,
-                cr: 0,
-                netTotal: 0,
-                profit:0,
-                cname: element['customer'],
-                invo: element['inovno'],
-                paytype: '0',
-                totalitems: element['returnItems'],
-                invoiceitems: [],
-                index: index);
+              id: element.id,
+              bank: 0,
+              cash: 0,
+              cr: 0,
+              netTotal: 0,
+              profit: 0,
+              cname: element['customer'],
+              invo: element['inovno'],
+              paytype: '0',
+              totalitems: element['returnItems'],
+              invoiceitems: [],
+              index: index);
 
           ivoices.add(list);
 
@@ -182,7 +177,7 @@ class _ReturnState extends State<Return> {
                 cash: 0,
                 cr: 0,
                 netTotal: 0,
-                profit:0,
+                profit: 0,
                 cname: element['customer'],
                 invo: element['inovno'],
                 paytype: '0',
@@ -218,7 +213,7 @@ class _ReturnState extends State<Return> {
                 cash: 0,
                 cr: 0,
                 netTotal: 0,
-                profit:0,
+                profit: 0,
                 cname: element['customer'],
                 invo: element['inovno'],
                 paytype: '0',
@@ -266,8 +261,7 @@ class _ReturnState extends State<Return> {
 
       setState(() {});
       getReturnInvoiceItems();
-    }).then((value) 
-    {
+    }).then((value) {
       if (returnivoices.isEmpty) {
         setState(() {
           returnerror = 'No Items';
@@ -572,13 +566,12 @@ class _ReturnState extends State<Return> {
                                                                                   const TextSpan(text: 'Cust. Name :  ', style: TextStyle(fontWeight: FontWeight.w600)),
                                                                                   TextSpan(text: ivoices[j].cname)
                                                                                 ])),
-                                                                               RichText(
-                                                                              text: TextSpan(text: '', style: DefaultTextStyle.of(context).style, children: <TextSpan>[
-                                                                            const TextSpan(text: 'Returned Items :  ', style: TextStyle(fontWeight: FontWeight.w600)),
-                                                                            TextSpan(text: '${ivoices[j].totalitems}')
-                                                                          ])),
+                                                                                RichText(
+                                                                                    text: TextSpan(text: '', style: DefaultTextStyle.of(context).style, children: <TextSpan>[
+                                                                                  const TextSpan(text: 'Returned Items :  ', style: TextStyle(fontWeight: FontWeight.w600)),
+                                                                                  TextSpan(text: '${ivoices[j].totalitems}')
+                                                                                ])),
                                                                               ]),
-                                                                          
                                                                           const SizedBox(
                                                                               height: 20,
                                                                               child: Divider()),
@@ -604,7 +597,9 @@ class _ReturnState extends State<Return> {
                                                                           ]),
                                                                           const SizedBox(
                                                                               height: 6),
-                                                                          for (int i = 0;i < ivoices[j].invoiceitems.length;i++)
+                                                                          for (int i = 0;
+                                                                              i < ivoices[j].invoiceitems.length;
+                                                                              i++)
                                                                             Row(children: [
                                                                               SizedBox(width: size.width * 0.013, child: Text('${i + 1}')),
                                                                               SizedBox(width: size.width * 0.04, child: Text(ivoices[j].invoiceitems[i].ino)),
@@ -831,42 +826,83 @@ class _ReturnState extends State<Return> {
                                                                                         width: size.width * 0.06,
                                                                                         child: IconButton(
                                                                                             onPressed: () async {
-                                                                                              
+                                                                                              dynamic id;
+
                                                                                               await returnRef.add({
                                                                                                 'inovno': int.parse(returnInvoNo),
                                                                                                 'customer': returnivoices[j].cname,
                                                                                                 'date': date,
                                                                                                 'returnItems': returnItemsList[i],
                                                                                               }).then((value) async {
-                                                                                                  returnRef.document(value.id).collection('items').add({
-                                                                                                    'iNo': returnivoices[j].invoiceitems[i].ino,
-                                                                                                    'iName': returnivoices[j].invoiceitems[i].iname,
-                                                                                                    'inewP': returnivoices[j].invoiceitems[i].iPrice,
-                                                                                                    'iSaleItems': returnItemsList[i],
-                                                                                                    'total': returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice,
-                                                                                                  });
-                                                                                                var id;
+                                                                                                returnRef.document(value.id).collection('items').add({
+                                                                                                  'iNo': returnivoices[j].invoiceitems[i].ino,
+                                                                                                  'iName': returnivoices[j].invoiceitems[i].iname,
+                                                                                                  'inewP': returnivoices[j].invoiceitems[i].iPrice,
+                                                                                                  'iSaleItems': returnItemsList[i],
+                                                                                                  'total': returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice,
+                                                                                                });
 
-                                                                                                await ref.get().asStream().forEach((doc) {
-                                                                                                  for (var d in doc) {
-                                                                                                    if (d['id'] == returnivoices[j].invoiceitems[i].ino) {
+                                                                                              await ref.get().asStream().forEach((doc) {
+                                                                                                for (var d in doc) {
+                                                                                                  if (d['id'] == returnivoices[j].invoiceitems[i].ino) {
+                                                                                                    setState(() {
+                                                                                                      pervItems = d['totalItems'];
+                                                                                                      purchasePrice = d['pricePerPiece'];
+                                                                                                      id = d.id;
+                                                                                                    });
+                                                                                                  }
+                                                                                                }
+                                                                                              })
+                                                                                              .then((value) {
+                                                                                                ref.document(id).update({
+                                                                                                  'totalItems': pervItems + returnItemsList[i]
+                                                                                                });
+                                                                                              });
+                                                                                              ////////////cash new coding
+                                                                                              if (returnivoices[j].paytype == 'Cash') {
+                                                                                                pos.add({
+                                                                                                  'date': date,
+                                                                                                  'cash': (returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice).abs(),
+                                                                                                  'status': false,
+                                                                                                });
+                                                                                              } else if (returnivoices[j].paytype == 'CR') {
+                                                                                                await customerRef.get().asStream().forEach((element) async {
+                                                                                                  for (var e in element) {
+                                                                                                    if ((returnivoices[j].cname).toString().toLowerCase() == (e['customer']).toString().toLowerCase()) {
                                                                                                       setState(() {
-                                                                                                        pervItems = d['totalItems'];
-                                                                                                        id = d.id;
+                                                                                                        perviousCR = e['cr'];
                                                                                                       });
+
+                                                                                                      ////cr minus
+                                                                                                      customerRef.document(e.id).update({
+                                                                                                    'cr': (perviousCR - returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice).abs()
+                                                                                                  });
+
+                                                                                                      await customerRef.document(e.id).collection('cr').add({
+                                                                                                          'date': date,
+                                                                                                          'cr': returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice,
+                                                                                                          'status': true,
+                                                                                                        });
                                                                                                     }
                                                                                                   }
-                                                                                                }).then((value) {
-                                                                                                  ref.document(id).update({
-                                                                                                    'totalItems': pervItems + returnItemsList[i]
-                                                                                                  });
                                                                                                 });
-                                                                                                pos.document('Cash Rs').set({'cash': (cashRs - returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice)});
+                                                                                              }
+
+                                                                                              setState(() {
+                                                                                                minusProfit = (returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice) - (returnItemsList[i] * purchasePrice);
+                                                                                              });
+                                                                                              /////////profit minus
+                                                                                              profitRef.add({
+                                                                                                'date': date,
+                                                                                                'invo': int.parse(returnInvoNo),
+                                                                                                'profit': minusProfit,
+                                                                                                'status': false,
+                                                                                              });
                                                                                               });
                                                                                               setState(() {
-                                                                                                returnShow=false;
+                                                                                                returnShow = false;
                                                                                                 returnivoices.clear();
-                                                                                                error='';
+                                                                                                error = '';
                                                                                                 getInvoices(2);
                                                                                               });
                                                                                             },
@@ -887,4 +923,6 @@ class _ReturnState extends State<Return> {
                       ])))
         ]);
   }
+
+
 }

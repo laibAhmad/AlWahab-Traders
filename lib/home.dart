@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_system/Screens/add_stock.dart';
 import 'package:inventory_system/Screens/customer_details.dart';
 import 'package:inventory_system/Screens/monthly_repo.dart';
+import 'package:inventory_system/Screens/profit_details.dart';
 
 import 'package:inventory_system/Screens/return.dart';
 import 'package:inventory_system/Screens/stock.dart';
@@ -34,25 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     getData();
-    getcash();
-    // getAlertItems();
 
     super.initState();
   }
 
-  int cash=0;
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cash;
-      });
-    }).then((value) {
-      setState(() {
-      });
-    });
-    return cashRs;
-  }
 
   Future<List<InStockData>> getData() async {
     indexList = indexList - 1;
@@ -122,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const ChinaPayment(),
       const MonthlyRepo(),
       const CashReceive(),
-      
+      // const ProfitDetails()
     ];
 
     return Scaffold(

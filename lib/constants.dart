@@ -14,6 +14,7 @@ int crRs = 0;
 int totalRs = 0;
 
 int ccR = 0;
+int tCash = 0;
 
 int todaySales = 0;
 int cashSales = 0;
@@ -104,6 +105,11 @@ CollectionReference receiveRef = Firestore.instance
     .collection("AWT")
     .document('inventory')
     .collection('receive');
+
+CollectionReference profitRef = Firestore.instance
+    .collection("AWT")
+    .document('inventory')
+    .collection('Profit');
 
 int indexList = -1;
 

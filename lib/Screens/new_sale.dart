@@ -136,25 +136,11 @@ class _NewSaleState extends State<NewSale> {
     getInvoice();
     getCustomers();
     getData();
-    getcash();
 
     findPrinters();
     super.initState();
   }
 
-  int cashJ=0;
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cashJ;
-      });
-    }).then((value) {
-      setState(() {
-      });
-    });
-    return cashRs;
-  }
 
   Future<List<InStockData>> getData() async {
     indexList = indexList - 1;
@@ -1444,7 +1430,7 @@ Future<void> prints(
   int pervCR,
   bool print,
 ) async {
-
+  
   int totalProfit = 0;
   //save to DataBase
 
@@ -1510,7 +1496,7 @@ Future<void> prints(
         'total': cart[i].totalP,
       });
 
-      ///minus number of items
+      // /minus number of items
       ref
           .document(cart[i].id)
           .update({'totalItems': cart[i].items - cart[i].saleItems});
@@ -1520,20 +1506,21 @@ Future<void> prints(
     }
     invoiceRef.document('$date $invoice').update({'profit': totalProfit});
 
-    //cash handling
-    if ((netTotal - discount) > cash) {
-        //again cr
-        pos.document('Cash Rs').set(
-          {'cash': (cashRs + cash).abs()});
-        } else if ((netTotal - discount) <= cash) {
-          if (cash == (netTotal - discount)) {
-             pos.document('Cash Rs').set(
-          {'cash': (cashRs + cash).abs()});
-          } else if (cash > (netTotal - discount)) {
-             pos.document('Cash Rs').set(
-          {'cash': (cashRs + cash).abs()});
-          }
-        }
+    
+      ////////////cash new coding
+      pos.add({
+        'date':date,
+        'cash':(cash).abs(),
+        'status':true,
+      });
+
+      profitRef.add({
+        'date':date,
+        'invo':invoice,
+        'profit': totalProfit,
+        'status':true,
+      });
+
     if (cr != 0) {
       pos.document('Cash Rs').set(
           {'cash': (cashRs + ((pervCR - cr).abs() - (netTotal - discount))).abs()});

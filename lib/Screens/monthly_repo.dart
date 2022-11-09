@@ -1,5 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory_system/Models/text_loading.dart';
@@ -17,11 +15,6 @@ class MonthlyRepo extends StatefulWidget {
 }
 
 class _MonthlyRepoState extends State<MonthlyRepo> {
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
-
   NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
 
   String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -80,8 +73,140 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
     getYearInvoices();
     getMonthExpnses();
     getYearExpnses();
+    getAllCashList();
+    getAllCashListY();
 
     super.initState();
+  }
+
+  List<CashList> profitListTrue = [];
+  List<CashList> profitListFalse = [];
+  int profitListTotal = 0;
+
+  List<CashList> profitListTrueY = [];
+  List<CashList> profitListFalseY = [];
+  int profitListTotalY = 0;
+
+  Future<List<CashList>> getAllCashList() async {
+    profitListTrue.clear();
+    await profitRef.get().asStream().forEach((element) async {
+      for (var s in element) {
+        if ((s['date']).toString().contains(invoiceMonthNum)) {
+          if ((s['status']) == true) {
+            CashList l =
+                CashList(cr: s['profit'], date: s['date'], status: s['status']);
+
+            profitListTrue.add(l);
+            setState(() {});
+          }
+        }
+      }
+      getCollectedCash();
+    });
+    return profitListTrue;
+  }
+
+  getCollectedCash() {
+    for (int i = 0; i < profitListTrue.length; i++) {
+      setState(() {
+        profitListTotal = profitListTotal + profitListTrue[i].cr;
+      });
+    }
+    getFalseCashList();
+  }
+
+  Future<List<CashList>> getFalseCashList() async {
+    profitListFalse.clear();
+    await profitRef.get().asStream().forEach((element) async {
+      for (var s in element) {
+        if ((s['date']).toString().contains(invoiceMonthNum)) {
+          if ((s['status']) == false) {
+            CashList l =
+                CashList(cr: s['profit'], date: s['date'], status: s['status']);
+
+            profitListFalse.add(l);
+            setState(() {});
+          }
+        }
+      }
+      getFasleCash();
+    });
+    return profitListFalse;
+  }
+
+  getFasleCash() {
+    for (int i = 0; i < profitListFalse.length; i++) {
+      setState(() {
+        profitListTotal = profitListTotal - profitListFalse[i].cr;
+      });
+    }
+    setState(() {
+      profitM = (profitListTotal).abs();
+      profitMo = profitM;
+      profitloadingMo = false;
+    });
+  }
+
+  /// year profit
+
+  Future<List<CashList>> getAllCashListY() async {
+    profitListTrueY.clear();
+    await profitRef.get().asStream().forEach((element) async {
+      for (var s in element) {
+        if ((s['date']).toString().contains(yearNum)) {
+          if ((s['status']) == true) {
+            CashList l =
+                CashList(cr: s['profit'], date: s['date'], status: s['status']);
+
+            profitListTrueY.add(l);
+            setState(() {});
+          }
+        }
+      }
+      getCollectedCash();
+    });
+    return profitListTrueY;
+  }
+
+  getCollectedCashY() {
+    for (int i = 0; i < profitListTrueY.length; i++) {
+      setState(() {
+        profitListTotalY = profitListTotalY + profitListTrueY[i].cr;
+      });
+    }
+    getFalseCashList();
+  }
+
+  Future<List<CashList>> getFalseCashListY() async {
+    profitListFalseY.clear();
+    await profitRef.get().asStream().forEach((element) async {
+      for (var s in element) {
+        if ((s['date']).toString().contains(yearNum)) {
+          if ((s['status']) == false) {
+            CashList l =
+                CashList(cr: s['profit'], date: s['date'], status: s['status']);
+
+            profitListFalseY.add(l);
+            setState(() {});
+          }
+        }
+      }
+      getFasleCash();
+    });
+    return profitListFalseY;
+  }
+
+  getFasleCashY() {
+    for (int i = 0; i < profitListFalseY.length; i++) {
+      setState(() {
+        profitListTotalY = profitListTotalY - profitListFalseY[i].cr;
+      });
+    }
+    setState(() {
+      profitY = (profitListTotalY).abs();
+      profitYr = profitY;
+      profitloadingYr = false;
+    });
   }
 
   Future<List<Invoices>> getMonthInvoices() async {
@@ -113,7 +238,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
       }
     }).then((value) {
       setState(() {
-        profitloadingMo=false;
+        profitloadingMo = false;
       });
     });
     getsalesiconActivity();
@@ -149,7 +274,7 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
       }
     }).then((value) {
       setState(() {
-        profitloadingYr=false;
+        profitloadingYr = false;
       });
     });
     getsalesiconActivityYear();
@@ -160,8 +285,6 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
     for (var i = 0; i < invoiceListM.length; i++) {
       setState(() {
         todaySalesM = todaySalesM + invoiceListM[i].netTotal;
-        profitM = profitM + invoiceListM[i].profit;
-
       });
 
       if ((invoiceListM[i].paytype).contains('Cash')) {
@@ -179,7 +302,6 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
         cashSalesMo = cashSalesM;
         crSalesMo = crSalesM;
         totalPcsMo = totalPcsM;
-        profitMo = profitM;
       });
     }
   }
@@ -188,7 +310,6 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
     for (var i = 0; i < invoiceListY.length; i++) {
       setState(() {
         todaySalesY = todaySalesY + invoiceListY[i].netTotal;
-        profitY = profitY + invoiceListY[i].profit;
       });
       if ((invoiceListY[i].paytype).contains('Cash')) {
         setState(() {
@@ -205,7 +326,6 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
         cashSalesYr = cashSalesY;
         crSalesYr = crSalesY;
         totalPcsYr = totalPcsY;
-        profitYr = profitY;
       });
     }
   }
@@ -275,622 +395,799 @@ class _MonthlyRepoState extends State<MonthlyRepo> {
               const Text('Sales Overview',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Column(
                 children: [
-                  Container(
-                    width: size.width * 0.412,
-                    height: size.height * 0.55,
-                    decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(5.0)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: (size.width * 0.41) - 20,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Monthly',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15)),
-                                      InkWell(
-                                        onTap: () async {
-                                          DateTime? pickedDate =
-                                              await showMonthYearPicker(
-                                            context: context,
-                                            initialDate: DateTime.now(),
-                                            firstDate: DateTime(2022),
-                                            lastDate: DateTime.now()
-                                                .add(const Duration(days: 1)),
-                                          );
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        width: size.width * 0.412,
+                        height: size.height * 0.55,
+                        decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(5.0)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    SizedBox(
+                                      width: (size.width * 0.41) - 20,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Monthly',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15)),
+                                          InkWell(
+                                            onTap: () async {
+                                              DateTime? pickedDate =
+                                                  await showMonthYearPicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: DateTime(2022),
+                                                lastDate: DateTime.now().add(
+                                                    const Duration(days: 1)),
+                                              );
 
-                                          if (pickedDate != null) {
-                                            String formattedDate =
-                                                DateFormat('yMMM')
+                                              if (pickedDate != null) {
+                                                String formattedDate =
+                                                    DateFormat('yMMM')
+                                                        .format(pickedDate);
+
+                                                String numM = DateFormat('y-MM')
                                                     .format(pickedDate);
-
-                                            String numM = DateFormat('y-MM')
-                                                .format(pickedDate);
-                                            setState(() {
-                                              expenseloadingMo=true;
-                                              profitloadingMo=true;
-                                              invoiceDate = formattedDate;
-                                              invoiceMonthNum = numM;
-                                              todaySalesM = 0;
-                                              cashSalesM = 0;
-                                              crSalesM = 0;
-                                              totalPcsM = 0;
-                                              todaySalesMo = 0;
-                                              cashSalesMo = 0;
-                                              crSalesMo = 0;
-                                              totalPcsMo = 0;
-                                              expenseM=0;
-                                              expenseMo=0;
-                                              profitM=0;
-                                              profitMo=0;
-                                              getMonthInvoices();
-                                              getMonthExpnses();
-                                            });
-                                          } else {}
-                                        },
-                                        child: Text(
-                                          '$invoiceDate     ',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.green.shade400),
-                                        ),
+                                                setState(() {
+                                                  expenseloadingMo = true;
+                                                  profitloadingMo = true;
+                                                  invoiceDate = formattedDate;
+                                                  invoiceMonthNum = numM;
+                                                  todaySalesM = 0;
+                                                  cashSalesM = 0;
+                                                  crSalesM = 0;
+                                                  totalPcsM = 0;
+                                                  todaySalesMo = 0;
+                                                  cashSalesMo = 0;
+                                                  crSalesMo = 0;
+                                                  totalPcsMo = 0;
+                                                  expenseM = 0;
+                                                  expenseMo = 0;
+                                                  profitM = 0;
+                                                  profitMo = 0;
+                                                  getMonthInvoices();
+                                                  getMonthExpnses();
+                                                });
+                                              } else {}
+                                            },
+                                            child: Text(
+                                              '$invoiceDate     ',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        const Text('Total Sales',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingMo?const TextLoading(): Text(
-                                            'Rs. ${myFormat.format(todaySalesMo)}',
-                                            style: TextStyle(
-                                                fontSize: size.width * 0.016,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: Icon(salesicon,
-                                              color: Colors.green.shade400),
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Cash Sales',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingMo?const TextLoading():Text(
-                                            'Rs. ${myFormat.format(cashSalesMo)}',
-                                            style: TextStyle(
-                                                fontSize: size.width * 0.016,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.green.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('CR',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingMo?const TextLoading():Text(
-                                            'Rs. ${myFormat.format(crSalesMo)}',
-                                            style: TextStyle(
-                                                fontSize: size.width * 0.016,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(profiticon,
-                                              color: Colors.green.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Total Pcs.',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingMo?const TextLoading():Text('$totalPcsMo',
-                                            style: TextStyle(
-                                                fontSize: size.width * 0.016,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.green.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Profit',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingMo
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(profitMo)}',
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Sales',
                                                 style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
                                                     fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.green.shade400),
+                                                        FontWeight.w400)),
+                                            profitloadingMo
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(todaySalesMo)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        const Text('Expenses',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        expenseloadingMo?const TextLoading():Text(
-                                            'Rs. ${myFormat.format(expenseMo)}',
-                                            style: TextStyle(
-                                                fontSize: size.width * 0.016,
-                                                fontWeight: FontWeight.w700)),
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Icon(salesicon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Cash Sales',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingMo
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(cashSalesMo)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('CR',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingMo
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(crSalesMo)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(profiticon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Pcs.',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingMo
+                                                ? const TextLoading()
+                                                : Text('$totalPcsMo',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Profit',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingMo
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(profitMo)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.green
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color: Colors.green.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Expenses',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            expenseloadingMo
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(expenseMo)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Container(
-                    width: size.width * 0.412,
-                    height: size.height * 0.55,
-                    decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(5.0)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: (size.width * 0.41) - 20,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Yearly',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15),
-                                      ),
-                                      InkWell(
-                                        onTap: () async {
-                                          DateTime? pickedDate =
-                                              await showMonthYearPicker(
-                                            context: context,
-                                            initialDate: DateTime.now(),
-                                            firstDate: DateTime(2022),
-                                            lastDate: DateTime.now()
-                                                .add(const Duration(days: 1)),
-                                          );
+                      const SizedBox(width: 5),
+                      Container(
+                        width: size.width * 0.412,
+                        height: size.height * 0.55,
+                        decoration: BoxDecoration(
+                            color: Colors.purple.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(5.0)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    SizedBox(
+                                      width: (size.width * 0.41) - 20,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Yearly',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15),
+                                          ),
+                                          InkWell(
+                                            onTap: () async {
+                                              DateTime? pickedDate =
+                                                  await showMonthYearPicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: DateTime(2022),
+                                                lastDate: DateTime.now().add(
+                                                    const Duration(days: 1)),
+                                              );
 
-                                          if (pickedDate != null) {
-                                            String formattedDate =
-                                                DateFormat('yMMM')
+                                              if (pickedDate != null) {
+                                                String formattedDate =
+                                                    DateFormat('yMMM')
+                                                        .format(pickedDate);
+
+                                                String numM = DateFormat('y-MM')
                                                     .format(pickedDate);
-
-                                            String numM = DateFormat('y-MM')
-                                                .format(pickedDate);
-                                            setState(() {
-                                              expenseloadingYr=true;
-                                              profitloadingYr=true;
-                                              invoiceDate = formattedDate;
-                                              invoiceMonthNum = numM;
-                                              todaySalesY = 0;
-                                              cashSalesY = 0;
-                                              crSalesY = 0;
-                                              totalPcsY = 0;
-                                              todaySalesYr = 0;
-                                              cashSalesYr = 0;
-                                              crSalesYr = 0;
-                                              totalPcsYr = 0;
-                                              profitY=0;
-                                              profitYr=0;
-                                              expenseY=0;
-                                              expenseYr=0;
-                                              getYearInvoices();
-                                              getYearExpnses();
-                                            });
-                                          } else {}
-                                        },
-                                        child: Text(
-                                          '$yearNum  ',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.purple.shade400),
-                                        ),
+                                                setState(() {
+                                                  expenseloadingYr = true;
+                                                  profitloadingYr = true;
+                                                  invoiceDate = formattedDate;
+                                                  invoiceMonthNum = numM;
+                                                  todaySalesY = 0;
+                                                  cashSalesY = 0;
+                                                  crSalesY = 0;
+                                                  totalPcsY = 0;
+                                                  todaySalesYr = 0;
+                                                  cashSalesYr = 0;
+                                                  crSalesYr = 0;
+                                                  totalPcsYr = 0;
+                                                  profitY = 0;
+                                                  profitYr = 0;
+                                                  expenseY = 0;
+                                                  expenseYr = 0;
+                                                  getYearInvoices();
+                                                  getYearExpnses();
+                                                });
+                                              } else {}
+                                            },
+                                            child: Text(
+                                              '$yearNum  ',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        const Text('Total Sales',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingYr
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(todaySalesYr)}',
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Sales',
                                                 style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
                                                     fontWeight:
-                                                        FontWeight.w700)),
+                                                        FontWeight.w400)),
+                                            profitloadingYr
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(todaySalesYr)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Icon(salesicon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Cash Sales',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingYr
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(cashSalesYr)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('CR',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingYr
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(crSalesYr)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(profiticon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Total Pcs.',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingYr
+                                                ? const TextLoading()
+                                                : Text('$totalPcsYr',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Profit',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            profitloadingYr
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(profitYr)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                              color: Colors.purple
+                                                  .withOpacity(0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0)),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(earnicon,
+                                                  color:
+                                                      Colors.purple.shade400),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Expense',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                            expenseloadingYr
+                                                ? const TextLoading()
+                                                : Text(
+                                                    'Rs. ${myFormat.format(expenseYr)}',
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            size.width * 0.016,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ],
                                 ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: Icon(salesicon,
-                                              color: Colors.purple.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Cash Sales',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingYr
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(cashSalesYr)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.purple.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('CR',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingYr
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(crSalesYr)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(profiticon,
-                                              color: Colors.purple.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Total Pcs.',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingYr
-                                            ? const TextLoading()
-                                            : Text('$totalPcsYr',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.purple.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Profit',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        profitloadingYr
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(profitYr)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                          color:
-                                              Colors.purple.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(earnicon,
-                                              color: Colors.purple.shade400),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text('Expense',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w400)),
-                                        expenseloadingYr
-                                            ? const TextLoading()
-                                            : Text(
-                                                'Rs. ${myFormat.format(expenseYr)}',
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        size.width * 0.016,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  //     Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+                  //   InkWell(
+                  //     onTap: (){
+                  //       setState(() {
+                  //         index=12;
+                  //       });
+                  //     },
+                  //     child: Container(
+                  //         width: size.width * 0.412,
+                  //         decoration: BoxDecoration(
+                  //             color: Colors.pink.withOpacity(0.05),
+                  //             borderRadius: BorderRadius.circular(5.0)),
+                  //         child: Padding(
+                  //             padding: const EdgeInsets.all(8.0),
+                  //             child: Row(
+                  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //                 children: [
+                  //                   SizedBox(
+                  //                       child: Column(
+                  //                           crossAxisAlignment:
+                  //                               CrossAxisAlignment.start,
+                  //                           mainAxisAlignment:
+                  //                               MainAxisAlignment.spaceBetween,
+                  //                           children: [
+                  //                         Row(children: [
+                  //                           Container(
+                  //                               height: 45,
+                  //                               width: 45,
+                  //                               decoration: BoxDecoration(
+                  //                                   color: Colors.pink
+                  //                                       .withOpacity(0.15),
+                  //                                   borderRadius:
+                  //                                       BorderRadius.circular(5.0)),
+                  //                               child: Center(
+                  //                                   child: Padding(
+                  //                                       padding:
+                  //                                           const EdgeInsets.all(8.0),
+                  //                                       child: Icon(earnicon,
+                  //                                           color: Colors
+                  //                                               .pink.shade400)))),
+                  //                           const SizedBox(width: 10),
+                  //                           Column(
+                  //                               crossAxisAlignment:
+                  //                                   CrossAxisAlignment.start,
+                  //                               children: const [
+                  //                                 Text('Click to See Profit Details',
+                  //                                     style: TextStyle(
+                  //                                         fontWeight:
+                  //                                             FontWeight.w400)),
+
+                  //                               ])
+                  //                         ]),
+                  //                       ]))
+                  //                 ]))),
+                  //   ),
+                  //   const SizedBox(width: 8),
+                  //   Container(
+                  //       width: size.width * 0.412,
+                  //       decoration: BoxDecoration(
+                  //           color: Colors.transparent,
+                  //           borderRadius: BorderRadius.circular(5.0)),
+                  //       child: Padding(
+                  //           padding: const EdgeInsets.all(8.0),
+                  //           child: Row(
+                  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //               children: [
+                  //                 SizedBox(
+                  //                     child: Column(
+                  //                         crossAxisAlignment:
+                  //                             CrossAxisAlignment.start,
+                  //                         mainAxisAlignment:
+                  //                             MainAxisAlignment.spaceBetween,
+                  //                         children: [
+                  //                       Row(children: [
+                  //                         Container(
+                  //                             height: 45,
+                  //                             width: 45,
+                  //                             decoration: BoxDecoration(
+                  //                                 color: Colors.transparent,
+                  //                                 borderRadius:
+                  //                                     BorderRadius.circular(5.0)),
+                  //                             child: Center(
+                  //                                 child: Padding(
+                  //                                     padding:
+                  //                                         const EdgeInsets.all(8.0),
+                  //                                     child: Icon(earnicon,
+                  //                                         color: Colors
+                  //                                             .transparent)))),
+                  //                         const SizedBox(width: 10),
+                  //                         Column(
+                  //                             crossAxisAlignment:
+                  //                                 CrossAxisAlignment.start,
+                  //                             children: [
+                  //                               const Text('',
+                  //                                   style: TextStyle(
+                  //                                       fontWeight:
+                  //                                           FontWeight.w400)),
+                  //                               // expense
+                  //                               //     ? const TextLoading()
+                  //                               //     :
+                  //                                   Text(
+                  //                                       '',
+                  //                                       style: TextStyle(
+                  //                                           fontSize:
+                  //                                               size.width * 0.016,
+                  //                                           fontWeight:
+                  //                                               FontWeight.w700))
+                  //                             ])
+                  //                       ]),
+                  //                     ]))
+                  //               ]))),
+                  // ]),
                 ],
               ),
               const SizedBox(height: 10),

@@ -100,6 +100,15 @@ class CustomerList{
 
 }
 
+class CashList{
+  int cr;
+  String date;
+  bool status;
+
+  CashList({required this.cr,required this.date,required this.status});
+
+}
+
 class ReturnInvoices {
   int netTotal, totalitems;
   dynamic id;
@@ -126,4 +135,13 @@ class InvoiceReturnItems {
       required this.ino,
       required this.isold,
       required this.totalsold});
+}
+
+class ProfitData {
+  String date;
+  int inv,profit;
+  bool status;
+  ProfitData({
+    required this.date,required this.inv, required this.profit,required this.status
+  });
 }

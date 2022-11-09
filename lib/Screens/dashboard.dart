@@ -47,9 +47,68 @@ class _DashboardState extends State<Dashboard> {
 
   List<CustomerList> crList = [];
 
+  List<CashList> cashListTrue = [];
+  List<CashList> cashListFalse = [];
+  int cashListTotal = 0;
+  
   List<int> remaingCRs = [];
 
   int remainedCR = 0;
+
+  Future<List<CashList>>  getAllCashList() async {
+    cashListTrue.clear();
+    await pos.get().asStream().forEach((element) async {
+      for (var s in element) {
+              if ((s['status']) == true) {
+                CashList l = CashList(
+                    cr: s['cash'], date: s['date'], status: s['status']);
+
+                cashListTrue.add(l);
+                setState(() {});
+              }
+      }
+      getCollectedCash();
+    });
+    return cashListTrue;
+  }
+
+   getCollectedCash() {
+    for (int i = 0; i < cashListTrue.length; i++) {
+      setState(() {
+        cashListTotal = cashListTotal + cashListTrue[i].cr;
+      });
+    }
+    getFalseCashList();
+  }
+
+ Future<List<CashList>>  getFalseCashList() async {
+    cashListFalse.clear();
+    await pos.get().asStream().forEach((element) async {
+      for (var s in element) {
+              if ((s['status']) == false) {
+                CashList l = CashList(
+                    cr: s['cash'], date: s['date'], status: s['status']);
+
+                cashListFalse.add(l);
+                setState(() {});
+              }
+      }
+      getFasleCash();
+    });
+    return cashListFalse;
+  }
+
+     getFasleCash() {
+    for (int i = 0; i < cashListFalse.length; i++) {
+      setState(() {
+        cashListTotal = cashListTotal - cashListFalse[i].cr;
+      });
+    }
+    setState(() {
+      tCash = (cashListTotal).abs();
+      tcashloading = false;
+    });
+  }
 
   Future<List<CustomerList>> getCollectedCRList() async {
     crList.clear();
@@ -100,7 +159,7 @@ class _DashboardState extends State<Dashboard> {
     expense = true;
     getInvoices();
     getCollectedCRList();
-    getcash();
+    getAllCashList();
     getCR();
     getExpnses();
 
@@ -190,20 +249,6 @@ class _DashboardState extends State<Dashboard> {
         remainedCR = remainedCR + remaingCRs[i];
       });
     }
-  }
-
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cash;
-      });
-    }).then((value) {
-      setState(() {
-        tcashloading = false;
-      });
-    });
-    return cashRs;
   }
 
   Future<int> getExpnses() async {
@@ -519,7 +564,7 @@ class _DashboardState extends State<Dashboard> {
                                       tcashloading
                                           ? const TextLoading()
                                           : Text(
-                                              'Rs. ${myFormat.format(cashRs)}',
+                                              'Rs. ${myFormat.format(tCash)}',
                                               style: TextStyle(
                                                   fontSize: size.width * 0.016,
                                                   fontWeight: FontWeight.w700)),

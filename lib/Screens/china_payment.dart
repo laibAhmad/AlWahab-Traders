@@ -1,5 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -17,11 +15,6 @@ class ChinaPayment extends StatefulWidget {
 }
 
 class _ChinaPaymentState extends State<ChinaPayment> {
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
-
   TextEditingController expenseName = TextEditingController();
   TextEditingController price = TextEditingController();
 
@@ -50,24 +43,10 @@ class _ChinaPaymentState extends State<ChinaPayment> {
   @override
   void initState() {
     getData(0);
-    getcash();
 
     super.initState();
   }
-  int cash=0;
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cash;
-      });
-    }).then((value) {
-      setState(() {
-      });
-    });
-    return cashRs;
-  }
-
+  
   Future<List<Expenses>> getData(int n) async {
     expenseItems.clear();
 
@@ -298,19 +277,18 @@ class _ChinaPaymentState extends State<ChinaPayment> {
                               setState(() {
                                 load = true;
                               });
-                              Firestore.instance
-                                  .collection("AWT")
-                                  .document('inventory')
-                                  .collection('payment')
-                                  .add({
+                              paymentRef.add({
                                 'name': expense,
                                 'date': date,
                                 'payment': spend,
                                 'from': search,
                               }).then((value) {
-                                pos
-                                    .document('Cash Rs')
-                                    .set({'cash': (cashRs - spend)});
+                                ////////////cash new coding
+                                pos.add({
+                                  'date': date,
+                                  'cash': (spend).abs(),
+                                  'status': false,
+                                });
 
                                 setState(() {
                                   load = false;

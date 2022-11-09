@@ -1,5 +1,3 @@
-import 'package:firedart/firestore/firestore.dart';
-import 'package:firedart/firestore/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -17,11 +15,6 @@ class CashReceive extends StatefulWidget {
 }
 
 class _CashReceiveState extends State<CashReceive> {
-  CollectionReference pos = Firestore.instance
-      .collection("AWT")
-      .document('inventory')
-      .collection('POS');
-
   TextEditingController expenseName = TextEditingController();
   TextEditingController price = TextEditingController();
 
@@ -50,23 +43,8 @@ class _CashReceiveState extends State<CashReceive> {
   @override
   void initState() {
     getData(0);
-    getcash();
 
     super.initState();
-  }
-  
-  int cash=0;
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cash;
-      });
-    }).then((value) {
-      setState(() {
-      });
-    });
-    return cashRs;
   }
 
   Future<List<Expenses>> getData(int n) async {
@@ -299,17 +277,20 @@ class _CashReceiveState extends State<CashReceive> {
                               setState(() {
                                 load = true;
                               });
-                              receiveRef
-                                  .add({
+                              receiveRef.add({
                                 'name': expense,
                                 'date': date,
                                 'payment': spend,
                                 'from': search,
                               }).then((value) {
-                                pos
-                                    .document('Cash Rs')
-                                    .set({'cash': (cashRs + spend)});
+                                ////////////cash new coding
+                                pos.add({
+                                  'date': date,
+                                  'cash': (spend).abs(),
+                                  'status': true,
+                                });
 
+                              
                                 setState(() {
                                   load = false;
                                   index = 11;
@@ -452,13 +433,13 @@ class _CashReceiveState extends State<CashReceive> {
                           ? error != ''
                               ? Expanded(child: Center(child: Text(error)))
                               : Expanded(
-                                child: Center(
+                                  child: Center(
                                     child: SpinKitWave(
                                       size: size.height * 0.035,
                                       color: black,
                                     ),
                                   ),
-                              )
+                                )
                           : SizedBox(
                               width: size.width * 0.85,
                               height: size.height * 0.6,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
 import '../Models/data.dart';
 import '../constants.dart';
 import '../home.dart';
@@ -18,14 +19,19 @@ class _InStockState extends State<InStock> {
   bool load = false;
   String op = 'edit';
 
+  int totalExpense=0;
+
   List<InStockData> itemsList = [];
 
   TextEditingController id = TextEditingController();
   TextEditingController itemName = TextEditingController();
 
+  NumberFormat myFormat = NumberFormat.decimalPattern('en_us');
+
   @override
   void initState() {
     itemsList1.clear();
+    itemsList.clear();
 
     getData();
 
@@ -57,7 +63,18 @@ class _InStockState extends State<InStock> {
         error='Nothing In-Stock';
       });
     });
+    getTotalExpense();
+
     return itemsList;
+  }
+
+      int getTotalExpense() {
+    for (var i = 0; i < itemsList1.length; i++) {
+      setState(() {
+        totalExpense = totalExpense + (itemsList1[i].pp * itemsList1[i].items);
+      });
+    }
+    return totalExpense;
   }
 
   getSortList() {
@@ -78,7 +95,7 @@ class _InStockState extends State<InStock> {
       width: size.width * 0.85,
       child: Padding(
         padding: EdgeInsets.all(size.width * 0.02),
-        child: itemsList.isEmpty
+        child: itemsList1.isEmpty
             ? error != ''
                 ? Center(child: Text(error))
                 : Center(
@@ -262,7 +279,7 @@ class _InStockState extends State<InStock> {
                                       DataCell(Text('${item.pp}')),
                                       DataCell(Text('${item.items}')),
 
-                                      DataCell(Text('Rs. ${item.total}')),
+                                      DataCell(Text( 'Rs. ${myFormat.format(item.pp * item.items)}')),
                                       DataCell(Row(
                                         children: [
                                           IconButton(
@@ -296,6 +313,26 @@ class _InStockState extends State<InStock> {
                       ],
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        RichText(
+                    text: TextSpan(
+                      text: '',
+                      style: DefaultTextStyle.of(context).style,
+                      children: <TextSpan>[
+                        const TextSpan(
+                            text: 'Total:  ',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextSpan(text: ' Rs. ${myFormat.format(totalExpense)}'),
+                      ],
+                    ),
+                  ),
+                      ],
+                    ),
+                  )
                 ],
               ),
       ),

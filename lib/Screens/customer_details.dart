@@ -294,23 +294,8 @@ class _CustomerDetailsState extends State<CustomerDetails> {
     ivoices.clear();
     custDetails.clear();
     getInvoices(0);
-    getcash();
 
     super.initState();
-  }
-
-  int cash=0;
-  Future<int> getcash() async {
-    await pos.document('Cash Rs').get().asStream().forEach((element) {
-      cash = element['cash'];
-      setState(() {
-        cashRs = cash;
-      });
-    }).then((value) {
-      setState(() {
-      });
-    });
-    return cashRs;
   }
 
   getSortList() {
@@ -323,10 +308,9 @@ class _CustomerDetailsState extends State<CustomerDetails> {
   }
 
   getTotalPayment() {
- 
     for (int i = 0; i < ivoices.length; i++) {
       setState(() {
-        paymentTotal=paymentTotal+ivoices[i].netTotal;
+        paymentTotal = paymentTotal + ivoices[i].netTotal;
       });
     }
   }
@@ -367,7 +351,7 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                             invoiceDate = 'by Month';
                             crerror = '';
                             error = '';
-                            paymentTotal=0;
+                            paymentTotal = 0;
                           });
                         } else {}
                       },
@@ -397,7 +381,7 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                             crerror = '';
                             error = '';
                             chooseDate = 'by Date';
-                            paymentTotal=0;
+                            paymentTotal = 0;
                             getInvoices(2);
                             getDetails(2);
                           });
@@ -418,7 +402,7 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                           getDetails(0);
                           crerror = '';
                           error = '';
-                          paymentTotal=0;
+                          paymentTotal = 0;
                         });
                       },
                       child: const Text(
@@ -474,28 +458,29 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                                         'cr': crDialog,
                                         'status': true,
                                       }).then((value) {
-                                        customerRef
-                                          .document(widget.id).update({'cr': widget.cr +crDialog});
+                                        customerRef.document(widget.id).update(
+                                            {'cr': widget.cr + crDialog});
                                       });
 
                                       setState(() {
-                                        crerror='';
+                                        crerror = '';
                                         getDetails(0);
                                         getInvoices(0);
                                       });
                                     }
                                     cr.clear();
-                                    
+
                                     Navigator.of(context).pop();
                                     setState(() {
-                                  index = 8;
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                               HomeScreen(
-                                                  cname: widget.cname, cr: widget.cr+crDialog, id: widget.id)));
-                                });
+                                      index = 8;
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => HomeScreen(
+                                                  cname: widget.cname,
+                                                  cr: widget.cr + crDialog,
+                                                  id: widget.id)));
+                                    });
                                   },
                                 )
                               ],
@@ -508,7 +493,6 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                     ElevatedButton(
                       child: const Text('Credit Returned'),
                       onPressed: () {
-                        
                         showDialog<void>(
                           context: context,
                           builder: (BuildContext context) {
@@ -550,15 +534,19 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                                         'cr': crDialog,
                                         'status': false,
                                       }).then((value) {
-                                        customerRef
-                                          .document(widget.id).update({'cr': (widget.cr -crDialog).abs()});
-                                           pos
-                                    .document('Cash Rs')
-                                    .set({'cash': (cashRs + crDialog)});
+                                        customerRef.document(widget.id).update({
+                                          'cr': (widget.cr - crDialog).abs()
+                                        });
+                                        ////////////cash new coding
+                                        pos.add({
+                                          'date': date,
+                                          'cash': (crDialog).abs(),
+                                          'status': true,
+                                        });
                                       });
 
                                       setState(() {
-                                        crerror='';
+                                        crerror = '';
                                         getDetails(0);
                                         getInvoices(0);
                                       });
@@ -566,15 +554,16 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                                     cr.clear();
                                     Navigator.of(context).pop();
                                     setState(() {
-                                      
-                                  index = 8;
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                               HomeScreen(
-                                                  cname: widget.cname, cr: (widget.cr-crDialog).abs(), id: widget.id)));
-                                });
+                                      index = 8;
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => HomeScreen(
+                                                  cname: widget.cname,
+                                                  cr: (widget.cr - crDialog)
+                                                      .abs(),
+                                                  id: widget.id)));
+                                    });
                                   },
                                 )
                               ],
@@ -1048,32 +1037,32 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                     ),
                   ),
                 ),
-
               ],
             ),
             Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: SizedBox(
-              width: size.width * 0.75,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: '',
-                      style: DefaultTextStyle.of(context).style,
-                      children: <TextSpan>[
-                        const TextSpan(
-                            text: 'Total Payment:  ',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        TextSpan(text: ' Rs. ${myFormat.format(paymentTotal)}'),
-                      ],
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SizedBox(
+                width: size.width * 0.75,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: '',
+                        style: DefaultTextStyle.of(context).style,
+                        children: <TextSpan>[
+                          const TextSpan(
+                              text: 'Total Payment:  ',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          TextSpan(
+                              text: ' Rs. ${myFormat.format(paymentTotal)}'),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           ],
         ),
       ),
