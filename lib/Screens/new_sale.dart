@@ -1449,10 +1449,11 @@ Future<void> prints(
   int pervCR,
   bool print,
 ) async {
+  String dateDoc = DateTime.now().toString();
   int totalProfit = 0;
   //save to DataBase
 
-  await invoiceRef.document('$date $invoice').set({
+  await invoiceRef.document('$dateDoc $invoice').set({
     'inovno': invoice,
     'customer': cname,
     'date': date,
@@ -1505,7 +1506,7 @@ Future<void> prints(
     }
 
     for (var i = 0; i < cart.length; i++) {
-      invoiceRef.document('$date $invoice').collection('items').add({
+      invoiceRef.document('$dateDoc $invoice').collection('items').add({
         'iNo': cart[i].uid,
         'iName': cart[i].nameofItem,
         'inewP': cart[i].newPrice,
@@ -1522,11 +1523,11 @@ Future<void> prints(
           (cart[i].totalP - (cart[i].saleItems * cart[i].pp)) -
           discount;
     }
-    invoiceRef.document('$date $invoice').update({'profit': totalProfit});
+    invoiceRef.document('$dateDoc $invoice').update({'profit': totalProfit});
 
     ////////////cash new coding
-    pos.add({
-      'date': date,
+    pos.document(DateTime.now().toString()).set({
+      'date': '$date - inv $invoice',
       'cash': (cash).abs(),
       'status': true,
     });

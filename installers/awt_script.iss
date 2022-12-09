@@ -3,13 +3,13 @@
 
 #define MyAppName "AWT"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "My Solutions, Inc."
+#define MyAppPublisher "My Company, Inc."
 #define MyAppExeName "inventory_system.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{DC157DDF-9649-45FB-BEDF-43BD16AFF23F}
+AppId={{7B463A01-0C5D-4E42-9C5E-E37F216320FB}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}

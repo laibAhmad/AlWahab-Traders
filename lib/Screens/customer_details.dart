@@ -281,10 +281,10 @@ class _CustomerDetailsState extends State<CustomerDetails> {
 
   getSortListInv() {
     ivoices.sort((a, b) {
-      return b.invo
+      return b.date
           .toString()
           .toLowerCase()
-          .compareTo(a.invo.toString().toLowerCase());
+          .compareTo(a.date.toString().toLowerCase());
     });
   }
 
@@ -538,8 +538,8 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                                           'cr': (widget.cr - crDialog).abs()
                                         });
                                         ////////////cash new coding
-                                        pos.add({
-                                          'date': date,
+                                        pos.document(DateTime.now().toString()).set({
+                                          'date': '$date - cr return',
                                           'cash': (crDialog).abs(),
                                           'status': true,
                                         });

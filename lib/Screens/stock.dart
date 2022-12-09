@@ -85,7 +85,7 @@ class _InStockState extends State<InStock> {
           .compareTo(b.name.toString().toLowerCase());
     });
   }
-
+  
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -276,16 +276,92 @@ class _InStockState extends State<InStock> {
                                           },
                                         ),
                                       ),
-                                      DataCell(Text('${item.pp}')),
-                                      DataCell(Text('${item.items}')),
+                                      DataCell(TextFormField(
+                                          decoration: const InputDecoration(
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                            border: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                          ),
+                                          initialValue: '${item.pp}',
+                                          onFieldSubmitted: (val) {
+                                            setState(() {
+                                              error='';
+                                              op = '';
+                                              
+                                            });
+                                            ref.document(item.id).update({
+                                              'pricePerPiece': int.parse(val),
+                                            }).then((value) {
+                                              setState(() {
+                                                itemsList1.clear();
+                                                    getData();
+                                              });
+                                            });
+
+                                            Timer(const Duration(seconds: 3),
+                                                () {
+                                              setState(() {
+                                                op = 'edit';
+                                              });
+                                            });
+                                          },
+                                        )),
+                                      DataCell(TextFormField(
+                                          decoration: const InputDecoration(
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                            border: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.transparent),
+                                            ),
+                                          ),
+                                          initialValue: '${item.items}',
+                                          onFieldSubmitted: (val) {
+                                            setState(() {
+                                                error='';
+                                              op = '';
+                                              
+                                            });
+                                            ref.document(item.id).update({
+                                              'totalItems': int.parse(val),
+                                            }).then((value){
+                                              setState(() {
+                                                itemsList1.clear();
+                                                    getData();
+                                              });
+                                            });
+                                            Timer(const Duration(seconds: 3),
+                                                () {
+                                              setState(() {
+                                                op = 'edit';
+                                              });
+                                            });
+                                          },
+                                        )),
 
                                       DataCell(Text( 'Rs. ${myFormat.format(item.pp * item.items)}')),
                                       DataCell(Row(
                                         children: [
                                           IconButton(
                                               onPressed: () async {
-                                                itemsList1.clear();
+                                                
                                                 setState(() {
+                                                  error='';
                                                   load = true;
                                                 });
                                                 await ref
@@ -293,6 +369,8 @@ class _InStockState extends State<InStock> {
                                                     .delete()
                                                     .then((value) {
                                                   setState(() {
+                                                    itemsList1.clear();
+                                                    getData();
                                                     load = false;
                                                     Navigator.pushReplacement(
                                                         context,

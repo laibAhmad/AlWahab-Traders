@@ -284,8 +284,8 @@ class _CashReceiveState extends State<CashReceive> {
                                 'from': search,
                               }).then((value) {
                                 ////////////cash new coding
-                                pos.add({
-                                  'date': date,
+                                pos.document(DateTime.now().toString()).set({
+                                  'date': '$date - c rec',
                                   'cash': (spend).abs(),
                                   'status': true,
                                 });

@@ -284,8 +284,8 @@ class _ChinaPaymentState extends State<ChinaPayment> {
                                 'from': search,
                               }).then((value) {
                                 ////////////cash new coding
-                                pos.add({
-                                  'date': date,
+                                pos.document(DateTime.now().toString()).set({
+                                  'date': '$date - c pay',
                                   'cash': (spend).abs(),
                                   'status': false,
                                 });

@@ -42,6 +42,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
   String error = '';
 
   bool load = false;
+  bool buttonLoad = false;
 
   String search = 'Cash';
 
@@ -266,71 +267,104 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           shrinkWrap: true,
                           itemCount: customerList1.length,
                           itemBuilder: (BuildContext context, int i) {
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  index = 8;
-                                });
+                            return Row(
+                              children: [
+                                
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      index = 8;
+                                    });
 
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => HomeScreen(
-                                            cname: customerList1[i]
-                                                .customerName,
-                                            cr: customerList1[i].cr,
-                                            id: customerList1[i].id)));
-                              },
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor:
-                                          Colors.deepPurple.withOpacity(0.2),
-                                      foregroundColor: Colors.deepPurple,
-                                      child: Center(
-                                        child: Text(customerList1[i]
-                                            .customerName
-                                            .substring(0, 1)
-                                            .toUpperCase()),
-                                      ),
-                                    ),
-                                    title: Text(
-                                        customerList1[i].customerName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w700)),
-                                    trailing: Column(
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => HomeScreen(
+                                                cname: customerList1[i]
+                                                    .customerName,
+                                                cr: customerList1[i].cr,
+                                                id: customerList1[i].id)));
+                                  },
+                                  child: SizedBox(
+                                    width: size.width*0.76,
+                                    height: size.height*0.1,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        Text(
-                                          'Rs. ${customerList1[i].cr}',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700),
-                                        ),
-                                        customerList1[i].cr == 0
-                                            ? const Text(
-                                                'Settled',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w300,
-                                                    fontSize: 12),
-                                              )
-                                            : const Text(
-                                                'You will get',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w300,
-                                                    fontSize: 12),
+                                        ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor:
+                                                Colors.deepPurple.withOpacity(0.2),
+                                            foregroundColor: Colors.deepPurple,
+                                            child: Center(
+                                              child: Text(customerList1[i]
+                                                  .customerName
+                                                  .substring(0, 1)
+                                                  .toUpperCase()),
+                                            ),
+                                          ),
+                                          title: Text(
+                                              customerList1[i].customerName,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w700)),
+                                          trailing: Column(
+                                            children: [
+                                              Text(
+                                                'Rs. ${customerList1[i].cr}',
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w700),
                                               ),
+                                              customerList1[i].cr == 0
+                                                  ? const Text(
+                                                      'Settled',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight.w300,
+                                                          fontSize: 12),
+                                                    )
+                                                  : const Text(
+                                                      'You will get',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight.w300,
+                                                          fontSize: 12),
+                                                    ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Padding(
+                                          padding:
+                                              EdgeInsets.symmetric(horizontal: 20.0),
+                                          child: Divider(),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 20.0),
-                                    child: Divider(),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              buttonLoad = true;
+                                              
+                                            });
+                                            customerRef
+                                                .document(customerList1[i].id)
+                                                .delete()
+                                                .then((value) {
+                                              setState(() {
+                                                error='';
+                                              customerList1.clear();
+                                                buttonLoad = false;
+                                                getInvoices(1);
+                                              });
+                                            });
+                                          },
+                                          icon: buttonLoad
+                                              ? SpinKitWave(
+                                                  size: size.height * 0.02,
+                                                  color: black)
+                                              : Icon(Icons.delete_rounded,
+                                                  color: red)),
+                              ],
                             );
                           },
                         ),

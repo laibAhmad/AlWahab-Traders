@@ -121,7 +121,7 @@ class _DashboardState extends State<Dashboard> {
             .asStream()
             .forEach((elements) {
           for (var s in elements) {
-            if ((s['date']).toString().compareTo(date) == 0) {
+            if ((s['date']).toString().contains(date)) {
               if ((s['status']) == false) {
                 CustomerList l = CustomerList(
                     cr: s['cr'], date: s['date'], status: s['status']);

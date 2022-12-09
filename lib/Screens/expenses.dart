@@ -284,8 +284,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 'spentFrom': search,
                               }).then((value) {
                                 ////////////cash new coding
-                                pos.add({
-                                  'date': date,
+                                pos.document(DateTime.now().toString()).set({
+                                  'date': '$date - exp',
                                   'cash': (spend).abs(),
                                   'status': false,
                                 });

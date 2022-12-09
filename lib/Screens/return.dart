@@ -863,8 +863,8 @@ class _ReturnState extends State<Return> {
                                                                                                 });
                                                                                                 ////////////cash new coding
                                                                                                 if (returnivoices[j].paytype == 'Cash') {
-                                                                                                  pos.add({
-                                                                                                    'date': date,
+                                                                                                  pos.document(DateTime.now().toString()).set({
+                                                                                                    'date': '$date - return inv $returnInvoNo',
                                                                                                     'cash': (returnItemsList[i] * returnivoices[j].invoiceitems[i].iPrice).abs(),
                                                                                                     'status': false,
                                                                                                   });
